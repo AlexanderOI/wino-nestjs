@@ -6,5 +6,5 @@ export interface RequestWithUser extends Request {
 
 interface UserInterface {
   name: string
-  roles: string[]
+  permissions: string[]
 }

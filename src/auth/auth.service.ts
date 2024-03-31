@@ -9,6 +9,7 @@ import { LoginAuthDto } from './dto/login.dto'
 import { hash, compare } from 'bcrypt'
 import { PrismaService } from 'src/prisma/prisma.service'
 import { JwtService } from '@nestjs/jwt'
+import { UserWithPermission } from 'types'
 
 @Injectable()
 export class AuthService {
@@ -27,7 +28,6 @@ export class AuthService {
         email: email,
       },
     })
-    console.log(existingUserByEmail)
 
     if (existingUserByEmail)
       throw new ConflictException(`A user with email: ${email} already exists`)
@@ -39,7 +39,9 @@ export class AuthService {
     })
 
     if (existsUserByName)
-      throw new ConflictException(`A user with username: ${username} already exists`)
+      throw new ConflictException(
+        `A user with username: ${username} already exists`,
+      )
 
     const user = await this.prisma.user.create({
       data: userToCreate,
@@ -59,7 +61,7 @@ export class AuthService {
 
   async login(userLogin: LoginAuthDto) {
     const { username, password } = userLogin
-    const user = await this.prisma.user.findUnique({
+    const user: UserWithPermission = await this.prisma.user.findUnique({
       where: {
         username: username,
       },
@@ -68,18 +70,61 @@ export class AuthService {
     if (!user) throw new NotFoundException('User does not exist')
 
     const checkPassword = await compare(password, user.password)
-    if (!checkPassword) throw new UnauthorizedException('Incorrect password, try again')
+    if (!checkPassword)
+      throw new UnauthorizedException('Incorrect password, try again')
+
+    const permission = await this.getUserPermissions(user.id)
+    user.permission = permission
+
+    const payload = { id: user.id, username: user.username }
+    const token = await this.jwtAuthService.signAsync(payload)
 
     delete user.password
     delete user.id
 
-    const payload = { name: user.name }
-    const token = await this.jwtAuthService.signAsync(payload)
-
     const data = {
-      user: user,
+      name: user.name,
+      username: user.username,
+      email: user.email,
+      profile: user.profile,
+      lang: user.lang,
+      role_type: user.role_type,
       token: token,
     }
+
     return data
+  }
+
+  async getUserPermissions(userId: number): Promise<string[]> {
+    const roles = await this.prisma.role.findMany({
+      where: {
+        UserRoles: {
+          some: {
+            user_id: userId,
+          },
+        },
+      },
+      include: {
+        RoleOnPermission: {
+          include: {
+            permission: {
+              select: {
+                name: true,
+              },
+            },
+          },
+        },
+      },
+    })
+
+    const permissions: string[] = []
+
+    roles.forEach((role) => {
+      role.RoleOnPermission.forEach((rolePermission) => {
+        permissions.push(rolePermission.permission.name)
+      })
+    })
+
+    return permissions
   }
 }

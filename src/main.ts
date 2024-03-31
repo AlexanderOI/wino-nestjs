@@ -5,6 +5,9 @@ import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger'
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule)
+  app.enableCors({
+    origin: process.env.APP_URL, // Se permite el origen de example.com
+  })
 
   const config = new DocumentBuilder()
     .addBearerAuth()
@@ -17,6 +20,6 @@ async function bootstrap() {
   SwaggerModule.setup('api', app, document)
 
   app.useGlobalPipes(new ValidationPipe())
-  await app.listen(3000)
+  await app.listen(process.env.PORT)
 }
 bootstrap()

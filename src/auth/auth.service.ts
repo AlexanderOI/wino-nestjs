@@ -45,18 +45,9 @@ export class AuthService {
 
     const user = await this.prisma.user.create({
       data: userToCreate,
-      select: {
-        id: true,
-        name: true,
-        username: true,
-        email: true,
-        profile: true,
-        lang: true,
-        role_type: true,
-      },
     })
 
-    return user
+    return true
   }
 
   async login(userLogin: LoginAuthDto) {

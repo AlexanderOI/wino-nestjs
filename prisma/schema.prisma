@@ -10,56 +10,145 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
+model Company {
+  id             Int              @id @default(autoincrement())
+  name           String
+  address        String
+  createdAt      DateTime         @default(now())
+  updatedAt      DateTime         @updatedAt
+  deletedAt      DateTime?
+  createdBy      Int?
+  updatedBy      Int?
+  deletedBy      Int?
+  Role           Role[]
+  RolePermission RolePermission[]
+  CompanyUser    CompanyUser[]
+}
+
 model User {
-  id         Int         @id @default(autoincrement())
-  name       String
-  username   String      @unique
-  email      String      @unique
-  profile    String?
-  lang       String?
-  password   String
-  role_type  String?
-  created_at DateTime    @default(now())
-  updated_at DateTime    @updatedAt
-  UserRoles  UserRoles[]
-  Role       Role[]
+  id          Int           @id @default(autoincrement())
+  name        String
+  userName    String        @unique
+  email       String        @unique
+  profile     String?
+  lang        String?
+  password    String
+  roleType    String?
+  createdAt   DateTime      @default(now())
+  updatedAt   DateTime      @updatedAt
+  deletedAt   DateTime?
+  createdBy   Int?
+  updatedBy   Int?
+  deletedBy   Int?
+  Role        Role[]
+  RoleUser    RoleUser[]
+  CompanyUser CompanyUser[]
+}
+
+model CompanyUser {
+  id        Int       @id @default(autoincrement())
+  companyId Int
+  company   Company   @relation(fields: [companyId], references: [id])
+  userId    Int
+  user      User      @relation(fields: [userId], references: [id])
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+  deletedAt DateTime?
+  createdBy Int?
+  updatedBy Int?
+  deletedBy Int?
 }
 
 model Role {
-  id               Int              @id @default(autoincrement())
-  name             String
-  description      String
-  created_by       Int
-  created          User             @relation(fields: [created_by], references: [id])
-  created_at       DateTime         @default(now())
-  updated_at       DateTime         @updatedAt
-  RoleOnPermission RolePermission[]
-  UserRoles        UserRoles[]
+  id              Int              @id @default(autoincrement())
+  name            String
+  description     String
+  companyId       Int
+  company         Company          @relation(fields: [companyId], references: [id])
+  roleUsers       RoleUser[]
+  rolePermissions RolePermission[]
+  createdAt       DateTime         @default(now())
+  updatedAt       DateTime         @updatedAt
+  deletedAt       DateTime?
+  createdBy       Int?
+  updatedBy       Int?
+  deletedBy       Int?
+  User            User?            @relation(fields: [userId], references: [id])
+  userId          Int?
 }
 
 model Permission {
-  id               Int              @id @default(autoincrement())
-  name             String
-  description      String
-  created_at       DateTime         @default(now())
-  updated_at       DateTime         @updatedAt
-  RoleOnPermission RolePermission[]
+  id              Int              @id @default(autoincrement())
+  name            String
+  description     String
+  rolePermissions RolePermission[]
+  createdAt       DateTime         @default(now())
+  updatedAt       DateTime         @updatedAt
+  deletedAt       DateTime?
+  createdBy       Int?
+  updatedBy       Int?
+  deletedBy       Int?
 }
 
 model RolePermission {
-  id            Int        @id @default(autoincrement())
-  role_id       Int
-  Permission_id Int
-  role          Role       @relation(fields: [role_id], references: [id])
-  permission    Permission @relation(fields: [Permission_id], references: [id])
-  created_at    DateTime   @default(now())
-  updated_at    DateTime   @updatedAt
+  id           Int        @id @default(autoincrement())
+  roleId       Int
+  role         Role       @relation(fields: [roleId], references: [id])
+  permissionId Int
+  permission   Permission @relation(fields: [permissionId], references: [id])
+  companyId    Int
+  company      Company    @relation(fields: [companyId], references: [id])
+  createdAt    DateTime   @default(now())
+  updatedAt    DateTime   @updatedAt
+  deletedAt    DateTime?
+  createdBy    Int?
+  updatedBy    Int?
+  deletedBy    Int?
 }
 
-model UserRoles {
-  id      Int  @id @default(autoincrement())
-  role_id Int
-  user_id Int
-  role    Role @relation(fields: [role_id], references: [id])
-  user    User @relation(fields: [user_id], references: [id])
+model RoleUser {
+  id        Int       @id @default(autoincrement())
+  roleId    Int
+  role      Role      @relation(fields: [roleId], references: [id])
+  userId    Int
+  user      User      @relation(fields: [userId], references: [id])
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+  deletedAt DateTime?
+  createdBy Int?
+  updatedBy Int?
+  deletedBy Int?
+}
+
+model Project {
+  id           Int       @id @default(autoincrement())
+  name         String
+  description  String?
+  abbreviation String?
+  start_date   DateTime
+  end_date     DateTime
+  responsible  String
+  client       String
+  budget       Int?
+  status       Int?
+  priority     Int?
+  category     String
+  risks        String?
+  createdAt    DateTime  @default(now())
+  updatedAt    DateTime  @updatedAt
+  deletedAt    DateTime?
+  createdBy    Int?
+  updatedBy    Int?
+  deletedBy    Int?
+}
+
+model ProjectCategory {
+  id        Int       @id @default(autoincrement())
+  name      Int
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+  deletedAt DateTime?
+  createdBy Int?
+  updatedBy Int?
+  deletedBy Int?
 }

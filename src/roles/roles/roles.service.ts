@@ -1,26 +1,36 @@
 import { BadRequestException, Injectable } from '@nestjs/common'
 import { CreateRoleDto } from './dto/create-role.dto'
 import { UpdateRoleDto } from './dto/update-role.dto'
+import { PrismaClient, Role } from '@prisma/client'
 import { PrismaService } from 'src/prisma/prisma.service'
-import { Role } from '@prisma/client'
+import { CustomPrismaClient } from 'src/prisma/prima.config'
 
 @Injectable()
 export class RolesService {
-  constructor(private prisma: PrismaService) {}
-
-  async create(userId: number, createRoleDto: CreateRoleDto): Promise<Role> {
-    const role = await this.prisma.role.create({
-      data: { ...createRoleDto, created_by: userId },
-    })
-    return role
+  private prisma: CustomPrismaClient
+  constructor(private cli: PrismaService) {
+    this.prisma = this.cli.client
   }
 
-  async findAll(user_id: number): Promise<Role[]> {
-    const roles = await this.prisma.role.findMany({
-      where: {
-        created_by: user_id,
+  async find() {
+    const roles = await this.prisma.role.findMany()
+    return roles
+  }
+
+  async create(createRoleDto: CreateRoleDto): Promise<Role> {
+    const roles = await this.prisma.role.create({
+      data: {
+        name: createRoleDto.name,
+        description: createRoleDto.description,
+        companyId: 1,
+        createdBy: 1,
       },
     })
+    return roles
+  }
+
+  async findAll(): Promise<Role[]> {
+    const roles = await this.prisma.role.findMany()
     return roles
   }
 
@@ -48,7 +58,7 @@ export class RolesService {
   }
 
   async remove(id: number): Promise<Role> {
-    const deletedRole = await this.prisma.role.delete({ where: { id } })
+    const deletedRole = await this.prisma.role.delete({ id: id })
     return deletedRole
   }
 }

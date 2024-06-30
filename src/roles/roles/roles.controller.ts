@@ -24,22 +24,22 @@ export class RolesController {
   constructor(private readonly rolesService: RolesService) {}
 
   @Post()
-  @UseGuards(AuthGuardJwt, PermissionsGuard)
-  @Permissions(['admin'])
-  create(
-    @Request() req: RequestWithUser,
-    @Body() createRoleDto: CreateRoleDto,
-  ) {
-    return this.rolesService.create(req.user.id, createRoleDto)
+  // @UseGuards(AuthGuardJwt, PermissionsGuard)
+  // @Permissions(['admin'])
+  create(@Body() createRoleDto: CreateRoleDto) {
+    return this.rolesService.create(createRoleDto)
   }
 
   @Get()
-  @UseGuards(AuthGuardJwt, PermissionsGuard)
-  @Permissions(['admin'])
+  // @UseGuards(AuthGuardJwt, PermissionsGuard)
+  // @Permissions(['admin'])
   findAll(@Request() req: RequestWithUser) {
-    console.log('b', req.user)
-    const userId = req.user.id
-    return this.rolesService.findAll(userId)
+    return this.rolesService.findAll()
+  }
+
+  @Get('h')
+  find() {
+    return this.rolesService.find()
   }
 
   @Get('search')

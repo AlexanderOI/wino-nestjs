@@ -19,7 +19,7 @@ export class AuthService {
   ) {}
 
   async register(userRegister: RegisterAuthDto) {
-    const { password, email, username } = userRegister
+    const { password, email, userName } = userRegister
     const passwordHash = await hash(password, 10)
     const userToCreate = { ...userRegister, password: passwordHash }
 
@@ -34,13 +34,13 @@ export class AuthService {
 
     const existsUserByName = await this.prisma.user.findUnique({
       where: {
-        username: username,
+        userName: userName,
       },
     })
 
     if (existsUserByName)
       throw new ConflictException(
-        `A user with username: ${username} already exists`,
+        `A user with username: ${userName} already exists`,
       )
 
     const user = await this.prisma.user.create({
@@ -51,10 +51,10 @@ export class AuthService {
   }
 
   async login(userLogin: LoginAuthDto) {
-    const { username, password } = userLogin
+    const { userName, password } = userLogin
     const user: UserWithPermission = await this.prisma.user.findUnique({
       where: {
-        username: username,
+        userName: userName,
       },
     })
 
@@ -67,7 +67,7 @@ export class AuthService {
     const permission = await this.getUserPermissions(user.id)
     user.permission = permission
 
-    const payload = { id: user.id, username: user.username }
+    const payload = { id: user.id, userName: user.userName }
     const token = await this.jwtAuthService.signAsync(payload)
 
     delete user.password
@@ -75,11 +75,11 @@ export class AuthService {
 
     const data = {
       name: user.name,
-      username: user.username,
+      username: user.userName,
       email: user.email,
       profile: user.profile,
       lang: user.lang,
-      role_type: user.role_type,
+      roleType: user.roleType,
       token: token,
     }
 
@@ -87,11 +87,11 @@ export class AuthService {
   }
 
   async getUserPermissions(userId: number): Promise<string[]> {
-    const roles = await this.prisma.role.findMany({
+    /* const roles = await this.prisma.role.findMany({
       where: {
-        UserRoles: {
+        roleUsers: {
           some: {
-            user_id: userId,
+            userId: userId,
           },
         },
       },
@@ -108,13 +108,14 @@ export class AuthService {
       },
     })
 
-    const permissions: string[] = []
 
     roles.forEach((role) => {
       role.RoleOnPermission.forEach((rolePermission) => {
         permissions.push(rolePermission.permission.name)
       })
     })
+*/
+    const permissions: string[] = []
 
     return permissions
   }

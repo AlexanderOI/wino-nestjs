@@ -10,7 +10,7 @@ export class RegisterAuthDto {
   @Matches(/^\S*$/, {
     message: 'username:Username must not contain blank spaces',
   })
-  username: string
+  userName: string
 
   @IsEmail({}, { message: 'email:Invalid email format' })
   @IsNotEmpty({ message: 'email:Email must not be empty' })

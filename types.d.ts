@@ -5,12 +5,13 @@ export interface RequestWithUser extends Request {
   user: UserInterface
 }
 
-export interface UserWithPermission extends User {
-  permission?: string[]
-}
-
-interface UserInterface {
-  id: int
-  username: string
-  permissions: string[]
+type UserInterface = {
+  id: number
+  name: string
+  userName: string
+  email: string
+  lang: string
+  roleType: string
+  permission: string[]
+  companyId: number
 }

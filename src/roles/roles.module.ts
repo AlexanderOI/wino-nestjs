@@ -1,11 +1,19 @@
 import { Module } from '@nestjs/common'
 import { RolesService } from './roles.service'
 import { RolesController } from './roles.controller'
-import { PrismaModule } from 'src/prisma/prisma.module'
+import { MongooseModule } from '@nestjs/mongoose'
+import { Role, RoleSchema } from './entities/role.entity'
 
 @Module({
   controllers: [RolesController],
   providers: [RolesService],
-  imports: [PrismaModule],
+  imports: [
+    MongooseModule.forFeature([
+      {
+        name: Role.name,
+        schema: RoleSchema,
+      },
+    ]),
+  ],
 })
 export class RolesModule {}

@@ -1,9 +1,9 @@
 import { Module } from '@nestjs/common'
-import { AuthService } from './auth.service'
-import { AuthController } from './auth.controller'
 import { MongooseModule } from '@nestjs/mongoose'
-import { User, UserSchema } from './entities/user.entity'
-import { Company, CompanySchema } from 'src/company/entities/company.entity'
+
+import { DataService } from './data.service'
+import { DataController } from './data.controller'
+import { User, UserSchema } from 'src/auth/entities/user.entity'
 import { Role, RoleSchema } from 'src/roles/entities/role.entity'
 import {
   Permission,
@@ -11,8 +11,8 @@ import {
 } from 'src/permissions/entities/permission.entity'
 
 @Module({
-  controllers: [AuthController],
-  providers: [AuthService],
+  controllers: [DataController],
+  providers: [DataService],
   imports: [
     MongooseModule.forFeature([
       {
@@ -20,18 +20,14 @@ import {
         schema: UserSchema,
       },
       {
-        name: Company.name,
-        schema: CompanySchema,
+        name: Permission.name,
+        schema: PermissionSchema,
       },
       {
         name: Role.name,
         schema: RoleSchema,
       },
-      {
-        name: Permission.name,
-        schema: PermissionSchema,
-      },
     ]),
   ],
 })
-export class AuthModule {}
+export class DataModule {}

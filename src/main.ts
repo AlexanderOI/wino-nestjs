@@ -6,7 +6,7 @@ import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger'
 async function bootstrap() {
   const app = await NestFactory.create(AppModule)
   app.enableCors({
-    origin: process.env.APP_URL, // Se permite el origen de example.com
+    origin: process.env.APP_URL,
   })
 
   const config = new DocumentBuilder()
@@ -16,6 +16,7 @@ async function bootstrap() {
     .setVersion('1.0')
     .addTag('auth')
     .build()
+
   const document = SwaggerModule.createDocument(app, config)
   SwaggerModule.setup('api', app, document)
 

@@ -1,8 +1,10 @@
-import { Controller, Post, Body } from '@nestjs/common'
+import { Controller, Post, Body, UseGuards, Request } from '@nestjs/common'
 import { AuthService } from './auth.service'
 import { RegisterAuthDto } from './dto/register.dto'
 import { LoginAuthDto } from './dto/login.dto'
 import { ApiTags } from '@nestjs/swagger'
+import { RefreshGuardJwt } from './guard/refresh.guard'
+import { RequestWithUser } from 'types'
 
 @ApiTags('auth')
 @Controller('auth')
@@ -17,5 +19,11 @@ export class AuthController {
   @Post('login')
   register(@Body() userLogin: LoginAuthDto) {
     return this.authService.login(userLogin)
+  }
+
+  @UseGuards(RefreshGuardJwt)
+  @Post('refresh')
+  refresh(@Request() req: RequestWithUser) {
+    return this.authService.refreshToken(req.user)
   }
 }

@@ -1,11 +1,12 @@
 import { BadRequestException, Injectable } from '@nestjs/common'
 import { InjectModel } from '@nestjs/mongoose'
-import { Model } from 'mongoose'
+import { Model, Types } from 'mongoose'
 
 import { CreateRoleDto } from './dto/create-role.dto'
 import { UpdateRoleDto } from './dto/update-role.dto'
 import { UserInterface } from 'types'
 import { Role } from './entities/role.entity'
+import { log } from 'console'
 
 @Injectable()
 export class RolesService {
@@ -38,8 +39,11 @@ export class RolesService {
     return role
   }
 
-  async findAll(): Promise<Role[]> {
-    const roles = await this.roleModel.find().select('name description')
+  async findAll(companyId: string): Promise<Role[]> {
+    const roles = await this.roleModel
+      .find({ companyId })
+      .select('name description')
+
     return roles
   }
 

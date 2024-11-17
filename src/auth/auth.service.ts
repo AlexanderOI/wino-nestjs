@@ -14,19 +14,16 @@ import { Model } from 'mongoose'
 import { Company } from 'src/company/entities/company.entity'
 import { Role } from 'src/roles/entities/role.entity'
 import { Permission } from 'src/permissions/entities/permission.entity'
+import { UserInterface } from 'types'
 
 @Injectable()
 export class AuthService {
   constructor(
     private jwtAuthService: JwtService,
-    @InjectModel(User.name)
-    private readonly userModel: Model<User>,
-    @InjectModel(Company.name)
-    private readonly companyModel: Model<Company>,
-    @InjectModel(Role.name)
-    private readonly roleModel: Model<Role>,
-    @InjectModel(Permission.name)
-    private readonly permissioModel: Model<Permission>,
+    @InjectModel(User.name) private readonly userModel: Model<User>,
+    @InjectModel(Company.name) private readonly companyModel: Model<Company>,
+    @InjectModel(Role.name) private readonly roleModel: Model<Role>,
+    @InjectModel(Permission.name) private readonly permissioModel: Model<Permission>,
   ) {}
 
   async register(userRegister: RegisterAuthDto) {
@@ -36,17 +33,16 @@ export class AuthService {
 
     const existingUserByEmail = await this.userModel.findOne({ email })
 
-    if (existingUserByEmail)
+    if (existingUserByEmail) {
       throw new ConflictException(`A user with email: ${email} already exists`)
+    }
 
     const existsUserByName = await this.userModel.findOne({
       userName: userName,
     })
 
     if (existsUserByName) {
-      throw new ConflictException(
-        `A user with username: ${userName} already exists`,
-      )
+      throw new ConflictException(`A user with username: ${userName} already exists`)
     }
 
     const company = await this.companyModel.create({
@@ -65,10 +61,11 @@ export class AuthService {
 
     const user = await this.userModel.create({
       ...userToCreate,
-      companies: [
-        { companyId: company._id, roles: [role._id], roleType: 'Admin' },
-      ],
+      companies: [{ companyId: company._id, roles: [role._id], roleType: 'Admin' }],
     })
+
+    await company.updateOne({ owner: user._id })
+    await company.updateOne({ createdBy: user._id })
 
     return { message: 'User registered successfully' }
   }
@@ -80,6 +77,7 @@ export class AuthService {
       .findOne({ userName })
       .populate({
         path: 'companies',
+        select: 'name address roles',
         populate: {
           path: 'roles',
           select: 'name permissions',
@@ -95,56 +93,43 @@ export class AuthService {
     if (!user) throw new NotFoundException('User does not exist')
 
     const checkPassword = await compare(password, user.password)
-    if (!checkPassword)
-      throw new UnauthorizedException('Incorrect password, try again')
+    if (!checkPassword) throw new UnauthorizedException('Incorrect password, try again')
 
     const permissions = user.companies[0].roles
       .map((role) => role.permissions.map((permission) => permission.name))
       .flat()
 
     const payload = { id: user._id, userName: user.userName, permissions }
-    const token = await this.jwtAuthService.signAsync(payload)
 
-    delete user.password
-    delete user.id
+    const { password: _, ...userData } = user
 
-    const data = {
-      userName: user.userName,
-      email: user.email,
-      roleType: user.companies[0].roleType,
-      token: token,
-      permissions: permissions,
+    return {
+      user: userData,
+      backendTokens: {
+        accessToken: await this.jwtAuthService.signAsync(payload, {
+          expiresIn: '1h',
+          secret: process.env.JWT_SECRET_ACCESS,
+        }),
+        refreshToken: await this.jwtAuthService.signAsync(payload, {
+          expiresIn: '7d',
+          secret: process.env.JWT_SECRET_REFRESH,
+        }),
+        expiresIn: new Date().getTime() + 60 * 60 * 1000,
+      },
     }
-
-    return data
   }
 
-  async getUserPermissions(userId: string): Promise<string[]> {
-    const user = await this.userModel
-      .findById(userId)
-      .populate({
-        path: 'companies.roles',
-        populate: {
-          path: 'permissions',
-          select: 'name',
-        },
-      })
-      .exec()
-
-    if (!user) {
-      throw new NotFoundException('User not found')
+  async refreshToken(user: UserInterface) {
+    return {
+      accessToken: await this.jwtAuthService.signAsync(user, {
+        expiresIn: '1h',
+        secret: process.env.JWT_SECRET_ACCESS,
+      }),
+      refreshToken: await this.jwtAuthService.signAsync(user, {
+        expiresIn: '7d',
+        secret: process.env.JWT_SECRET_REFRESH,
+      }),
+      expiresIn: new Date().getTime() + 60 * 60 * 1000,
     }
-
-    // Obtener todos los permisos de todas las compañías del usuario
-    const permissions = new Set<string>()
-    user.companies.forEach((companyRole) => {
-      companyRole.roles.forEach((role) => {
-        role.permissions.forEach((permission) => {
-          permissions.add(permission.name)
-        })
-      })
-    })
-
-    return Array.from(permissions)
   }
 }

@@ -4,7 +4,7 @@ import {
   PipeTransform,
   BadRequestException,
 } from '@nestjs/common'
-import { isValidObjectId } from 'mongoose'
+import { isValidObjectId, Types } from 'mongoose'
 
 @Injectable()
 export class ParseMongoIdPipe implements PipeTransform {
@@ -13,6 +13,6 @@ export class ParseMongoIdPipe implements PipeTransform {
       throw new BadRequestException(`${value} is not a valid MongoID`)
     }
 
-    return value
+    return new Types.ObjectId(value)
   }
 }

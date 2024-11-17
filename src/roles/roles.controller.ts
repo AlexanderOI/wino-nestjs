@@ -16,9 +16,7 @@ import { UpdateRoleDto } from './dto/update-role.dto'
 import { RequestWithUser } from 'types'
 import { PermissionsGuard } from 'src/permissions/guards/permissions.guard'
 import { Auth } from 'src/auth/auth.decorator'
-import { AuthGuardJwt } from 'src/auth/auth.guard'
 import { Permissions } from 'src/permissions/decorators/permissions.decorator'
-import { log } from 'console'
 import { ParseMongoIdPipe } from 'src/common/parse-mongo-id.pipe'
 
 @Controller('roles')
@@ -28,20 +26,19 @@ export class RolesController {
   @Post()
   // @UseGuards(AuthGuardJwt, PermissionsGuard)
   // @Permissions(['admin'])
-  create(
-    @Request() req: RequestWithUser,
-    @Body() createRoleDto: CreateRoleDto,
-  ) {
-    console.log(createRoleDto)
+  create(@Request() req: RequestWithUser, @Body() createRoleDto: CreateRoleDto) {
     const user = req.user
     return this.rolesService.create(createRoleDto, user)
   }
 
-  @Get()
+  @Get(':companyId')
   // @UseGuards(AuthGuardJwt, PermissionsGuard)
   // @Permissions(['admin'])
-  findAll(@Request() req: RequestWithUser) {
-    return this.rolesService.findAll()
+  findAll(
+    @Request() req: RequestWithUser,
+    @Param('companyId', ParseMongoIdPipe) companyId: string,
+  ) {
+    return this.rolesService.findAll(companyId)
   }
 
   @Get(':id')

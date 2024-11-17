@@ -5,14 +5,12 @@ import { MongooseModule } from '@nestjs/mongoose'
 import { User, UserSchema } from './entities/user.entity'
 import { Company, CompanySchema } from 'src/company/entities/company.entity'
 import { Role, RoleSchema } from 'src/roles/entities/role.entity'
-import {
-  Permission,
-  PermissionSchema,
-} from 'src/permissions/entities/permission.entity'
+import { JwtService } from '@nestjs/jwt'
+import { Permission, PermissionSchema } from 'src/permissions/entities/permission.entity'
 
 @Module({
   controllers: [AuthController],
-  providers: [AuthService],
+  providers: [AuthService, JwtService],
   imports: [
     MongooseModule.forFeature([
       {

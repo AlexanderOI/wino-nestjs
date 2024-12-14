@@ -1,7 +1,6 @@
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose'
 import { Document, Types } from 'mongoose'
 import { Company } from 'src/company/entities/company.entity'
-import { Role } from 'src/roles/entities/role.entity'
 
 @Schema({ timestamps: true })
 export class User extends Document {
@@ -31,22 +30,8 @@ export class User extends Document {
   })
   password: string
 
-  @Prop({
-    type: [
-      {
-        companyId: { type: Types.ObjectId, ref: 'Company' },
-        roles: [{ type: Types.ObjectId, ref: 'Role' }],
-        roleType: { type: String },
-      },
-    ],
-  })
-  companies: [
-    {
-      companyId: Company
-      roles: Role[]
-      roleType: string
-    },
-  ]
+  @Prop({ type: Types.ObjectId, ref: 'Company' })
+  currentCompanyId: Company
 
   @Prop()
   lang: string

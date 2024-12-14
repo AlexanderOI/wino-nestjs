@@ -21,6 +21,12 @@ export class Company extends Document {
   @Prop({ type: Types.ObjectId, ref: 'User' })
   owner: User
 
+  @Prop({ type: [{ type: Types.ObjectId, ref: 'User' }] })
+  users: User[]
+
+  @Prop({ default: false })
+  isMain: Boolean
+
   @Prop()
   createdBy: string
 

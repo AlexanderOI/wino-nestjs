@@ -1,4 +1,4 @@
-import { IsNotEmpty, IsString, MinLength, IsNumber } from 'class-validator'
+import { IsNotEmpty, IsString, MinLength } from 'class-validator'
 
 export class CreateRoleDto {
   @IsString()
@@ -11,7 +11,7 @@ export class CreateRoleDto {
   @MinLength(3)
   description: string
 
-  @IsNumber({}, { each: true })
+  @IsString({ each: true })
   @IsNotEmpty({ each: true })
-  permissions: number[]
+  permissions: string[]
 }

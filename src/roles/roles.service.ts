@@ -1,48 +1,53 @@
 import { BadRequestException, Injectable } from '@nestjs/common'
 import { InjectModel } from '@nestjs/mongoose'
-import { Model, Types } from 'mongoose'
+import { Model } from 'mongoose'
 
 import { CreateRoleDto } from './dto/create-role.dto'
 import { UpdateRoleDto } from './dto/update-role.dto'
 import { UserInterface } from 'types'
 import { Role } from './entities/role.entity'
-import { log } from 'console'
+import { toObjectId } from 'src/common/transformer.mongo-id'
+import { commonPopulateFields } from 'src/common/populate-field'
+import { Company } from 'src/company/entities/company.entity'
 
 @Injectable()
 export class RolesService {
   constructor(
     @InjectModel(Role.name)
     private roleModel: Model<Role>,
+    @InjectModel(Company.name)
+    private companyModel: Model<Company>,
   ) {}
 
-  async find(id: string): Promise<Role> {
-    const role = await this.roleModel
-      .findOne({ _id: id })
-      .select('name description')
+  async findOne(id: string): Promise<Role> {
+    const role = await this.roleModel.findById(id)
 
     if (!role) throw new BadRequestException('Role not found')
 
     return role
   }
 
-  async create(
-    createRoleDto: CreateRoleDto,
-    user: UserInterface,
-  ): Promise<Role> {
+  async create(createRoleDto: CreateRoleDto, user: UserInterface): Promise<Role> {
+    const permissions = toObjectId(createRoleDto.permissions)
     const role = await this.roleModel.create({
-      name: createRoleDto.name,
-      description: createRoleDto.description,
-      companyId: user.companyId,
+      ...createRoleDto,
       createdBy: user.id,
+      permissions,
     })
+
+    await this.companyModel.updateOne(
+      { _id: user.companyId },
+      { $push: { roles: role._id } },
+    )
 
     return role
   }
 
   async findAll(companyId: string): Promise<Role[]> {
-    const roles = await this.roleModel
-      .find({ companyId })
-      .select('name description')
+    const company = await this.companyModel.findById(companyId)
+    console.log(company, 'company')
+
+    const roles = await this.roleModel.find({ _id: { $in: company.roles } })
 
     return roles
   }
@@ -61,16 +66,24 @@ export class RolesService {
     return roles
   }
 
-  async update(id: string, updateRoleDto: UpdateRoleDto): Promise<Role> {
-    const role = await this.find(id)
+  async update(
+    id: string,
+    updateRoleDto: UpdateRoleDto,
+    user: UserInterface,
+  ): Promise<Role> {
+    const role = await this.findOne(id)
+    const permissions = toObjectId(updateRoleDto.permissions)
 
-    const updatedRole = role.updateOne(updateRoleDto, { new: true })
+    const updatedRole = role.updateOne(
+      { ...updateRoleDto, permissions, updatedBy: user.id },
+      { new: true },
+    )
 
     return updatedRole
   }
 
   async remove(id: string): Promise<Role> {
-    const role = await this.find(id)
+    const role = await this.findOne(id)
 
     const deletedRole = await role.deleteOne()
 

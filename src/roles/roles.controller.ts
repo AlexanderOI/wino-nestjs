@@ -13,8 +13,8 @@ import { RolesService } from './roles.service'
 import { CreateRoleDto } from './dto/create-role.dto'
 import { UpdateRoleDto } from './dto/update-role.dto'
 import { RequestWithUser } from 'types'
-import { Auth } from 'src/auth/auth.decorator'
-import { ParseMongoIdPipe } from 'src/common/parse-mongo-id.pipe'
+import { Auth } from '@/auth/auth.decorator'
+import { ParseMongoIdPipe } from '@/common/parse-mongo-id.pipe'
 
 @Controller('roles')
 @Auth()

@@ -5,10 +5,9 @@ import { Model } from 'mongoose'
 import { CreateRoleDto } from './dto/create-role.dto'
 import { UpdateRoleDto } from './dto/update-role.dto'
 import { UserInterface } from 'types'
-import { Role } from './entities/role.entity'
-import { toObjectId } from 'src/common/transformer.mongo-id'
-import { commonPopulateFields } from 'src/common/populate-field'
-import { Company } from 'src/company/entities/company.entity'
+import { Role } from '../models/role.model'
+import { toObjectId } from '@/common/transformer.mongo-id'
+import { Company } from '@/models/company.model'
 
 @Injectable()
 export class RolesService {
@@ -45,11 +44,8 @@ export class RolesService {
 
   async findAll(companyId: string): Promise<Role[]> {
     const company = await this.companyModel.findById(companyId)
-    console.log(company, 'company')
 
-    const roles = await this.roleModel.find({ _id: { $in: company.roles } })
-
-    return roles
+    return await this.roleModel.find({ _id: { $in: company.roles } })
   }
 
   async search(query: string): Promise<Role[]> {

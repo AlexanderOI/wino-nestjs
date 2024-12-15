@@ -1,12 +1,12 @@
 import { BadRequestException, Injectable } from '@nestjs/common'
 import { CreateCompanyDto } from './dto/create-company.dto'
 import { UpdateCompanyDto } from './dto/update-company.dto'
-import { Company } from './entities/company.entity'
+import { Company } from '../models/company.model'
 import { InjectModel } from '@nestjs/mongoose'
 import { Model, Types } from 'mongoose'
 import { UserInterface } from 'types'
-import { Role } from 'src/roles/entities/role.entity'
-import { Permission } from 'src/permissions/entities/permission.entity'
+import { Role } from '@/models/role.model'
+import { Permission } from '@/models/permission.model'
 
 @Injectable()
 export class CompanyService {
@@ -87,5 +87,13 @@ export class CompanyService {
     const deletedCompany = await company.deleteOne()
 
     return deletedCompany
+  }
+
+  async addUserToCompany(companyId: unknown, userId: unknown) {
+    const company = await this.companyModel.findByIdAndUpdate(companyId, {
+      $push: { users: userId },
+    })
+
+    return company
   }
 }

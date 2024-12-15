@@ -13,9 +13,9 @@ import {
 import { PermissionsService } from './permissions.service'
 
 import { RequestWithUser } from 'types'
-import { PermissionsGuard } from 'src/permissions/guards/permissions.guard'
-import { Auth } from 'src/auth/auth.decorator'
-import { Permissions } from 'src/permissions/decorators/permissions.decorator'
+import { PermissionsGuard } from '@/permissions/guards/permissions.guard'
+import { Auth } from '@/auth/auth.decorator'
+import { Permissions } from '@/permissions/decorators/permissions.decorator'
 
 @Controller('permissions')
 export class PermissionsController {

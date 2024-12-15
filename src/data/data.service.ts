@@ -2,9 +2,9 @@ import { Injectable } from '@nestjs/common'
 import { InjectModel } from '@nestjs/mongoose'
 import { Model } from 'mongoose'
 
-import { User } from 'src/auth/entities/user.entity'
-import { permissions } from 'src/permissions/constants/permissions'
-import { Permission } from 'src/permissions/entities/permission.entity'
+import { User } from '@/models/user.model'
+import { permissions } from '@/permissions/constants/permissions'
+import { Permission } from '@/models/permission.model'
 
 @Injectable()
 export class DataService {

@@ -11,9 +11,9 @@ import {
 import { CompanyService } from './company.service'
 import { CreateCompanyDto } from './dto/create-company.dto'
 import { UpdateCompanyDto } from './dto/update-company.dto'
-import { Auth } from 'src/auth/auth.decorator'
+import { Auth } from '@/auth/auth.decorator'
 import { RequestWithUser } from 'types'
-import { ParseMongoIdPipe } from 'src/common/parse-mongo-id.pipe'
+import { ParseMongoIdPipe } from '@/common/parse-mongo-id.pipe'
 
 @Auth()
 @Controller('company')

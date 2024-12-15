@@ -1,6 +1,6 @@
 import { BadRequestException, Injectable } from '@nestjs/common'
 import { InjectModel } from '@nestjs/mongoose'
-import { Permission } from './entities/permission.entity'
+import { Permission } from '../models/permission.model'
 import { Model } from 'mongoose'
 
 @Injectable()

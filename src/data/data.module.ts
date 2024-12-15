@@ -3,9 +3,9 @@ import { MongooseModule } from '@nestjs/mongoose'
 
 import { DataService } from './data.service'
 import { DataController } from './data.controller'
-import { User, UserSchema } from 'src/auth/entities/user.entity'
-import { Role, RoleSchema } from 'src/roles/entities/role.entity'
-import { Permission, PermissionSchema } from 'src/permissions/entities/permission.entity'
+import { User, UserSchema } from '@/models/user.model'
+import { Role, RoleSchema } from '@/models/role.model'
+import { Permission, PermissionSchema } from '@/models/permission.model'
 
 @Module({
   controllers: [DataController],

@@ -1,14 +1,14 @@
 import { Module } from '@nestjs/common'
 import { CompanyService } from './company.service'
 import { CompanyController } from './company.controller'
-import { CompanySchema } from './entities/company.entity'
-import { Company } from './entities/company.entity'
+import { CompanySchema } from '../models/company.model'
+import { Company } from '../models/company.model'
 import { MongooseModule } from '@nestjs/mongoose'
 import { JwtService } from '@nestjs/jwt'
-import { Permission } from 'src/permissions/entities/permission.entity'
-import { Role } from 'src/roles/entities/role.entity'
-import { RoleSchema } from 'src/roles/entities/role.entity'
-import { PermissionSchema } from 'src/permissions/entities/permission.entity'
+import { Permission } from '@/models/permission.model'
+import { Role } from '@/models/role.model'
+import { RoleSchema } from '@/models/role.model'
+import { PermissionSchema } from '@/models/permission.model'
 
 @Module({
   controllers: [CompanyController],

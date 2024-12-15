@@ -1,6 +1,6 @@
 import { UseGuards, applyDecorators } from '@nestjs/common'
-import { Permissions } from 'src/permissions/decorators/permissions.decorator'
-import { PermissionsGuard } from 'src/permissions/guards/permissions.guard'
+import { Permissions } from '@/permissions/decorators/permissions.decorator'
+import { PermissionsGuard } from '@/permissions/guards/permissions.guard'
 import { AuthGuardJwt } from './guard/auth.guard'
 
 export function Auth(...permissions: string[]) {

@@ -2,9 +2,9 @@ import { Module } from '@nestjs/common'
 import { RolesService } from './roles.service'
 import { RolesController } from './roles.controller'
 import { MongooseModule } from '@nestjs/mongoose'
-import { Role, RoleSchema } from './entities/role.entity'
+import { Role, RoleSchema } from '@/models/role.model'
 import { JwtService } from '@nestjs/jwt'
-import { Company, CompanySchema } from 'src/company/entities/company.entity'
+import { Company, CompanySchema } from '@/models/company.model'
 
 @Module({
   controllers: [RolesController],

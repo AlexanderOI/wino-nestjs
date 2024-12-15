@@ -1,8 +1,8 @@
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose'
 import { Document, Types } from 'mongoose'
-import { User } from 'src/auth/entities/user.entity'
-import { Company } from 'src/company/entities/company.entity'
-import { Permission } from 'src/permissions/entities/permission.entity'
+import { User } from '@/models/user.model'
+import { Company } from '@/models/company.model'
+import { Permission } from '@/models/permission.model'
 
 @Schema({ timestamps: true })
 export class Role extends Document {

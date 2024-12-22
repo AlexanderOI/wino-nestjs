@@ -27,7 +27,7 @@ export class CompanyController {
 
   @Get()
   findAll(@Request() req: RequestWithUser) {
-    return this.companyService.findAll(req.user.id)
+    return this.companyService.findAll(req.user._id)
   }
 
   @Get(':id')

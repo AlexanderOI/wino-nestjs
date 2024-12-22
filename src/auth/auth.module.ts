@@ -7,28 +7,18 @@ import { Company, CompanySchema } from '@/models/company.model'
 import { Role, RoleSchema } from '@/models/role.model'
 import { JwtService } from '@nestjs/jwt'
 import { Permission, PermissionSchema } from '@/models/permission.model'
+import { UserCompany, UserCompanySchema } from '@/models/user-company.model'
 
 @Module({
   controllers: [AuthController],
   providers: [AuthService, JwtService],
   imports: [
     MongooseModule.forFeature([
-      {
-        name: User.name,
-        schema: UserSchema,
-      },
-      {
-        name: Company.name,
-        schema: CompanySchema,
-      },
-      {
-        name: Role.name,
-        schema: RoleSchema,
-      },
-      {
-        name: Permission.name,
-        schema: PermissionSchema,
-      },
+      { name: User.name, schema: UserSchema },
+      { name: Company.name, schema: CompanySchema },
+      { name: Role.name, schema: RoleSchema },
+      { name: Permission.name, schema: PermissionSchema },
+      { name: UserCompany.name, schema: UserCompanySchema },
     ]),
   ],
 })

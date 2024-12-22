@@ -4,7 +4,7 @@ import { Model } from 'mongoose'
 
 import { CreateRoleDto } from './dto/create-role.dto'
 import { UpdateRoleDto } from './dto/update-role.dto'
-import { UserInterface } from 'types'
+import { UserAuth } from 'types'
 import { Role } from '../models/role.model'
 import { toObjectId } from '@/common/transformer.mongo-id'
 import { Company } from '@/models/company.model'
@@ -26,11 +26,11 @@ export class RolesService {
     return role
   }
 
-  async create(createRoleDto: CreateRoleDto, user: UserInterface): Promise<Role> {
+  async create(createRoleDto: CreateRoleDto, user: UserAuth): Promise<Role> {
     const permissions = toObjectId(createRoleDto.permissions)
     const role = await this.roleModel.create({
       ...createRoleDto,
-      createdBy: user.id,
+      createdBy: user._id,
       permissions,
     })
 
@@ -62,16 +62,12 @@ export class RolesService {
     return roles
   }
 
-  async update(
-    id: string,
-    updateRoleDto: UpdateRoleDto,
-    user: UserInterface,
-  ): Promise<Role> {
+  async update(id: string, updateRoleDto: UpdateRoleDto, user: UserAuth): Promise<Role> {
     const role = await this.findOne(id)
     const permissions = toObjectId(updateRoleDto.permissions)
 
     const updatedRole = role.updateOne(
-      { ...updateRoleDto, permissions, updatedBy: user.id },
+      { ...updateRoleDto, permissions, updatedBy: user._id },
       { new: true },
     )
 

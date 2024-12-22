@@ -31,21 +31,22 @@ export class UserController {
   }
 
   @Get(':id')
-  findOne(@Param('id', ParseMongoIdPipe) id: string) {
-    return this.userService.findOne(id)
+  findOne(@Param('id', ParseMongoIdPipe) id: string, @Request() req: RequestWithUser) {
+    return this.userService.findOne(id, req.user)
   }
 
   @Patch(':id')
   update(
     @Param('id', ParseMongoIdPipe) id: string,
     @Body() updateUserDto: UpdateUserDto,
+    @Request() req: RequestWithUser,
   ) {
-    return this.userService.update(id, updateUserDto)
+    return this.userService.update(id, updateUserDto, req.user)
   }
 
   @Delete(':id')
-  remove(@Param('id', ParseMongoIdPipe) id: string) {
-    return this.userService.remove(id)
+  remove(@Param('id', ParseMongoIdPipe) id: string, @Request() req: RequestWithUser) {
+    return this.userService.remove(id, req.user)
   }
 
   @Get('change-current-company/:companyId')

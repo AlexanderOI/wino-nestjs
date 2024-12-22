@@ -7,7 +7,7 @@ import {
 import { JwtService } from '@nestjs/jwt'
 import { Request } from 'express'
 import { Types } from 'mongoose'
-import { UserInterface } from 'types'
+import { UserAuth } from 'types'
 
 @Injectable()
 export class AuthGuardJwt implements CanActivate {
@@ -20,14 +20,14 @@ export class AuthGuardJwt implements CanActivate {
     if (!token) throw new UnauthorizedException()
 
     try {
-      const payload: UserInterface = await this.jwtService.verifyAsync(token, {
+      const payload: UserAuth = await this.jwtService.verifyAsync(token, {
         secret: process.env.JWT_SECRET_ACCESS,
       })
 
       let user = {
         ...payload,
         companyId: new Types.ObjectId(payload.companyId),
-        id: new Types.ObjectId(payload.id),
+        _id: new Types.ObjectId(payload._id),
       }
       request.user = user
     } catch {

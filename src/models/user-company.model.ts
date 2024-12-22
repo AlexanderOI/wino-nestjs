@@ -1,11 +1,11 @@
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose'
 import { Document, Types } from 'mongoose'
 import { User } from '@/models/user.model'
-import { Company } from '@/models/company.model'
 import { Role } from '@/models/role.model'
+import { Company } from './company.model'
 
 @Schema({ timestamps: true })
-export class UserCompanyRole extends Document {
+export class UserCompany extends Document {
   @Prop({ type: Types.ObjectId, ref: 'User', required: true })
   user: User
 
@@ -15,7 +15,10 @@ export class UserCompanyRole extends Document {
   @Prop({ type: [{ type: Types.ObjectId, ref: 'Role' }] })
   roles: Role[]
 
-  @Prop({ default: false })
+  @Prop()
+  roleType: string
+
+  @Prop({ default: true })
   isActive: boolean
 
   @Prop()
@@ -25,4 +28,4 @@ export class UserCompanyRole extends Document {
   updatedBy: string
 }
 
-export const UserCompanyRoleSchema = SchemaFactory.createForClass(UserCompanyRole)
+export const UserCompanySchema = SchemaFactory.createForClass(UserCompany)

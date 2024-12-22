@@ -9,6 +9,8 @@ import { Permission } from '@/models/permission.model'
 import { Role } from '@/models/role.model'
 import { RoleSchema } from '@/models/role.model'
 import { PermissionSchema } from '@/models/permission.model'
+import { UserCompanySchema } from '@/models/user-company.model'
+import { UserCompany } from '@/models/user-company.model'
 
 @Module({
   controllers: [CompanyController],
@@ -18,6 +20,7 @@ import { PermissionSchema } from '@/models/permission.model'
       { name: Company.name, schema: CompanySchema },
       { name: Role.name, schema: RoleSchema },
       { name: Permission.name, schema: PermissionSchema },
+      { name: UserCompany.name, schema: UserCompanySchema },
     ]),
   ],
   exports: [CompanyService],

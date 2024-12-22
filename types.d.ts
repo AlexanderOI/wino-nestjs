@@ -2,11 +2,11 @@ import { Request } from 'express'
 import { User } from '@prisma/client'
 
 export interface RequestWithUser extends Request {
-  user: UserInterface
+  user: UserAuth
 }
 
-export interface UserInterface {
-  id: string
+export interface UserAuth {
+  _id: string
   name: string
   userName: string
   email: string

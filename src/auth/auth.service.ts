@@ -13,10 +13,11 @@ import { User } from '../models/user.model'
 import { Company } from '@/models/company.model'
 import { Role } from '@/models/role.model'
 import { Permission } from '@/models/permission.model'
+import { UserCompany } from '@/models/user-company.model'
 
 import { RegisterAuthDto } from './dto/register.dto'
 import { LoginAuthDto } from './dto/login.dto'
-import { UserInterface } from 'types'
+import { UserAuth } from 'types'
 
 @Injectable()
 export class AuthService {
@@ -26,6 +27,7 @@ export class AuthService {
     @InjectModel(Company.name) private readonly companyModel: Model<Company>,
     @InjectModel(Role.name) private readonly roleModel: Model<Role>,
     @InjectModel(Permission.name) private readonly permissioModel: Model<Permission>,
+    @InjectModel(UserCompany.name) private readonly userCompanyModel: Model<UserCompany>,
   ) {}
 
   async register(userRegister: RegisterAuthDto) {
@@ -69,6 +71,15 @@ export class AuthService {
       roles: [role._id],
     })
 
+    const userCompany = await this.userCompanyModel.create({
+      user: user._id,
+      company: company._id,
+      roleType: 'admin',
+      roles: [role._id],
+      createdBy: user._id,
+    })
+
+    await company.updateOne({ usersCompany: [userCompany._id] })
     await user.updateOne({ currentCompanyId: company._id })
 
     return { message: 'User registered successfully' }
@@ -102,7 +113,7 @@ export class AuthService {
     }
   }
 
-  async refreshToken(user: UserInterface) {
+  async refreshToken(user: UserAuth) {
     const payload = await this.createUserPayload(user.userName)
 
     return {
@@ -137,6 +148,11 @@ export class AuthService {
       })
       .lean()
 
+    const userCompany = await this.userCompanyModel.findOne({
+      user: populatedUser._id,
+      company: populatedUser.currentCompanyId._id,
+    })
+
     const permissions = populatedUser.currentCompanyId.roles
       .map((role) => role.permissions.map((permission) => permission.name))
       .flat()
@@ -149,7 +165,8 @@ export class AuthService {
 
     const userDataPayload = {
       ...userData,
-      id: _id,
+      _id,
+      roleType: userCompany.roleType,
       companyId: company._id,
       companyName: company.name,
       companyAddress: company.address,

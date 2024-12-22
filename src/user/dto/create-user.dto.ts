@@ -20,10 +20,13 @@ export class CreateUserDto {
   @IsString({ each: true })
   roles: string[]
 
-  @IsNotEmpty()
   @IsString()
   // @Matches(/^(?=.*\d)(?=.*[a-z])(?=.*[A-Z])(?=.*[a-zA-Z]).{8,}$/)
   password: string
+
+  @IsString()
+  // @Matches(/^(?=.*\d)(?=.*[a-z])(?=.*[A-Z])(?=.*[a-zA-Z]).{8,}$/)
+  confirmPassword: string
 
   @IsNotEmpty()
   @IsString()

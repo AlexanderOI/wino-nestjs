@@ -1,7 +1,6 @@
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose'
 import { Document, Types } from 'mongoose'
 import { User } from '@/models/user.model'
-import { Company } from '@/models/company.model'
 import { Permission } from '@/models/permission.model'
 
 @Schema({ timestamps: true })

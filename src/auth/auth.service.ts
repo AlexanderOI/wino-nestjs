@@ -63,7 +63,7 @@ export class AuthService {
     })
 
     const company = await this.companyModel.create({
-      name: 'Default Company' + Math.floor(Math.random() * 1000),
+      name: userName + '_Company',
       description: 'Default company for new users',
       isMain: true,
       owner: user._id,

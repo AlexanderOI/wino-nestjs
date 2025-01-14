@@ -11,6 +11,7 @@ import { CompanyModule } from './company/company.module'
 import { DataModule } from './data/data.module'
 import { ConfigModule } from '@nestjs/config'
 import { UserModule } from './user/user.module'
+import { ProjectsModule } from './projects/projects.module'
 
 @Module({
   imports: [
@@ -22,6 +23,7 @@ import { UserModule } from './user/user.module'
     CompanyModule,
     DataModule,
     UserModule,
+    ProjectsModule,
   ],
   controllers: [AppController],
   providers: [

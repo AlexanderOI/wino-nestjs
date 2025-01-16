@@ -24,7 +24,6 @@ export class ProjectsController {
 
   @Post()
   create(@Body() createProjectDto: CreateProjectDto, @Request() req: RequestWithUser) {
-    console.log(createProjectDto)
     return this.projectsService.create(createProjectDto, req.user)
   }
 

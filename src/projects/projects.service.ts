@@ -33,7 +33,16 @@ export class ProjectsService {
   }
 
   findOne(id: string) {
-    const project = this.projectModel.findById(id)
+    const project = this.projectModel.findById(id).populate([
+      {
+        path: 'usersTeam',
+        model: 'User',
+      },
+      {
+        path: 'owner',
+        model: 'User',
+      },
+    ])
 
     if (!project) throw new NotFoundException('Project not found')
 

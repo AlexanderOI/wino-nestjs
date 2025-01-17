@@ -8,6 +8,7 @@ import { User } from '@/models/user.model'
 import { InjectModel } from '@nestjs/mongoose'
 import { toObjectId } from '@/common/transformer.mongo-id'
 import { AddProjectUsersDto } from './dto/add-project.dto'
+import { ColumnsService } from '../columns-task/columns.service'
 
 @Injectable()
 export class ProjectsService {
@@ -16,6 +17,7 @@ export class ProjectsService {
     private readonly projectModel: Model<Project>,
     @InjectModel(User.name)
     private readonly userModel: Model<User>,
+    private readonly columnsService: ColumnsService,
   ) {}
 
   async create(createProjectDto: CreateProjectDto, userAuth: UserAuth) {
@@ -24,6 +26,8 @@ export class ProjectsService {
       company: userAuth.companyId,
       owner: toObjectId(createProjectDto.owner),
     })
+
+    await this.columnsService.createDefaultColumns(project._id)
 
     return project
   }

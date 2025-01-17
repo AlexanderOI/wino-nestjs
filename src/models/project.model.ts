@@ -33,9 +33,6 @@ export class Project extends Document {
 
   @Prop({ type: Types.ObjectId, ref: 'Company' })
   company: Company
-
-  @Prop({ type: [{ type: Types.ObjectId, ref: 'Task' }] })
-  tasks: Task[]
 }
 
 export const ProjectSchema = SchemaFactory.createForClass(Project)

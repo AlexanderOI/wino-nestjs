@@ -7,6 +7,7 @@ import { Project } from '@/models/project.model'
 import { User } from '@/models/user.model'
 import { UserSchema } from '@/models/user.model'
 import { JwtService } from '@nestjs/jwt'
+import { ColumnsModule } from '@/columns-task/columns.module'
 
 @Module({
   controllers: [ProjectsController],
@@ -16,6 +17,7 @@ import { JwtService } from '@nestjs/jwt'
       { name: Project.name, schema: ProjectSchema },
       { name: User.name, schema: UserSchema },
     ]),
+    ColumnsModule,
   ],
 })
 export class ProjectsModule {}

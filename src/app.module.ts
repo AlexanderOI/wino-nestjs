@@ -12,6 +12,7 @@ import { DataModule } from './data/data.module'
 import { ConfigModule } from '@nestjs/config'
 import { UserModule } from './user/user.module'
 import { ProjectsModule } from './projects/projects.module'
+import { TasksModule } from './tasks/tasks.module';
 
 @Module({
   imports: [
@@ -24,6 +25,7 @@ import { ProjectsModule } from './projects/projects.module'
     DataModule,
     UserModule,
     ProjectsModule,
+    TasksModule,
   ],
   controllers: [AppController],
   providers: [

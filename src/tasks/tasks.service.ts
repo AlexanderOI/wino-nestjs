@@ -5,6 +5,7 @@ import { InjectModel } from '@nestjs/mongoose'
 import { Task } from '@/models/task.model'
 import { Model } from 'mongoose'
 import { toObjectId } from '@/common/transformer.mongo-id'
+import { PaginationDto } from '@/common/dto/pagination.dto'
 
 @Injectable()
 export class TasksService {
@@ -24,16 +25,32 @@ export class TasksService {
     return task
   }
 
-  async findAll(projectId: string) {
-    const tasks = await this.taskModel.find({ projectId })
+  async findAll(projectId: string, paginationDto: PaginationDto) {
+    const { limit = 10, offset = 0 } = paginationDto
+    const tasks = await this.taskModel
+      .find({ projectId })
+      .populate('columnId')
+      .limit(limit)
+      .skip(offset)
 
     if (!tasks) throw new NotFoundException('Tasks not found')
 
     return tasks
   }
 
-  async findOne(id: string) {
-    const task = await this.taskModel.findById(id)
+  async findOne(id: string): Promise<Partial<Task>> {
+    const task = await this.taskModel
+      .findById(id)
+      .populate([
+        {
+          path: 'columnId',
+          select: 'name',
+        },
+        {
+          path: 'assignedTo',
+        },
+      ])
+      .exec()
 
     if (!task) throw new NotFoundException('Task not found')
 

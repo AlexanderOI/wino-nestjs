@@ -1,4 +1,14 @@
-import { Controller, Get, Post, Put, Delete, Body, Param, Patch } from '@nestjs/common'
+import {
+  Controller,
+  Get,
+  Post,
+  Put,
+  Delete,
+  Body,
+  Param,
+  Patch,
+  Query,
+} from '@nestjs/common'
 import { ColumnsService } from './columns.service'
 import { CreateColumnTaskDto } from './dto/create-column.dto'
 import { UpdateColumnTaskDto } from './dto/update-column.dto'
@@ -17,8 +27,11 @@ export class ColumnsController {
   }
 
   @Get('project/:projectId')
-  findByProject(@Param('projectId', ParseMongoIdPipe) projectId: string) {
-    return this.columnsService.findByProject(projectId)
+  findByProject(
+    @Param('projectId', ParseMongoIdPipe) projectId: string,
+    @Query('withTasks') withTasks: boolean = false,
+  ) {
+    return this.columnsService.findByProject(projectId, withTasks)
   }
 
   @Patch(':id')

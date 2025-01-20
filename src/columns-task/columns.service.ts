@@ -46,10 +46,7 @@ export class ColumnsService {
       order: newOrder,
     })
 
-    return {
-      ...newColumn.toObject(),
-      id: newColumn._id,
-    }
+    return newColumn
   }
 
   async update(columnId: string, updateColumnDto: UpdateColumnTaskDto) {
@@ -78,21 +75,25 @@ export class ColumnsService {
     return { message: 'Columna eliminada exitosamente' }
   }
 
-  async findByProject(projectId: string) {
+  async findByProject(projectId: string, withTasks: boolean = false) {
     const columns = await this.columnTaskModel
       .find({ projectId, isActive: true })
       .sort({ order: 1 })
 
-    const columnsWithTasks = await Promise.all(
-      columns.map(async (column) => {
-        const tasks = await this.taskModel
-          .find({ columnId: column._id })
-          .sort({ order: 1 })
-        return { ...column.toObject(), id: column._id, tasks }
-      }),
-    )
+    if (withTasks) {
+      const columnsWithTasks = await Promise.all(
+        columns.map(async (column) => {
+          const tasks = await this.taskModel
+            .find({ columnId: column._id })
+            .sort({ order: 1 })
+          return { ...column.toObject(), tasks }
+        }),
+      )
 
-    return columnsWithTasks
+      return columnsWithTasks
+    }
+
+    return columns
   }
 
   async reorder(projectId: string, columnOrders: { id: string; order: number }[]) {

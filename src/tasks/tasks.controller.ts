@@ -1,9 +1,20 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete, Put } from '@nestjs/common'
+import {
+  Controller,
+  Get,
+  Post,
+  Body,
+  Patch,
+  Param,
+  Delete,
+  Put,
+  Query,
+} from '@nestjs/common'
 import { TasksService } from './tasks.service'
 import { CreateTaskDto } from './dto/create-task.dto'
 import { UpdateTaskDto } from './dto/update-task.dto'
 import { Auth } from '@/auth/auth.decorator'
 import { ParseMongoIdPipe } from '@/common/parse-mongo-id.pipe'
+import { PaginationDto } from '@/common/dto/pagination.dto'
 
 @Auth()
 @Controller('tasks')
@@ -15,9 +26,12 @@ export class TasksController {
     return this.tasksService.create(createTaskDto)
   }
 
-  @Get()
-  findAll(@Param('projectId', ParseMongoIdPipe) projectId: string) {
-    return this.tasksService.findAll(projectId)
+  @Get('project/:projectId')
+  findAll(
+    @Param('projectId', ParseMongoIdPipe) projectId: string,
+    @Query() paginationDto: PaginationDto,
+  ) {
+    return this.tasksService.findAll(projectId, paginationDto)
   }
 
   @Get(':id')

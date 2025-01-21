@@ -1,4 +1,7 @@
-import { IsNotEmpty, IsNumber, IsOptional, IsString } from 'class-validator'
+import { toObjectId } from '@/common/transformer.mongo-id'
+import { Transform } from 'class-transformer'
+import { IsDate, IsNotEmpty, IsNumber, IsOptional, IsString } from 'class-validator'
+import { ObjectId } from 'mongoose'
 
 export class CreateTaskDto {
   @IsString()
@@ -17,11 +20,21 @@ export class CreateTaskDto {
   @IsOptional()
   order: number
 
-  @IsString()
   @IsNotEmpty()
-  columnId: string
+  @Transform(({ value }) => toObjectId(value))
+  columnId: ObjectId
 
-  @IsString()
   @IsNotEmpty()
-  projectId: string
+  @Transform(({ value }) => toObjectId(value))
+  projectId: ObjectId
+
+  @IsDate()
+  @IsOptional()
+  @Transform(({ value }) => new Date(value))
+  startDate: Date
+
+  @IsDate()
+  @IsOptional()
+  @Transform(({ value }) => new Date(value))
+  endDate: Date
 }

@@ -24,6 +24,12 @@ export class Task extends Document {
 
   @Prop({ type: Types.ObjectId, ref: 'ColumnTask' })
   columnId: ColumnTask
+
+  @Prop({ type: Date })
+  startDate: Date
+
+  @Prop({ type: Date })
+  endDate: Date
 }
 
 export const TaskSchema = SchemaFactory.createForClass(Task)

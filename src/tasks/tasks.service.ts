@@ -12,13 +12,7 @@ export class TasksService {
   constructor(@InjectModel(Task.name) private taskModel: Model<Task>) {}
 
   async create(createTaskDto: CreateTaskDto) {
-    const { projectId, columnId, ...taskData } = createTaskDto
-
-    const task = await this.taskModel.create({
-      ...taskData,
-      projectId: toObjectId(projectId),
-      columnId: toObjectId(columnId),
-    })
+    const task = await this.taskModel.create(createTaskDto)
 
     if (!task) throw new NotFoundException('Task not created')
 
@@ -58,16 +52,10 @@ export class TasksService {
   }
 
   async update(id: string, updateTaskDto: UpdateTaskDto) {
-    const { columnId, ...taskData } = updateTaskDto
     const task = await this.taskModel.findByIdAndUpdate(
       id,
-      {
-        ...taskData,
-        columnId: toObjectId(columnId),
-      },
-      {
-        new: true,
-      },
+      { ...updateTaskDto },
+      { new: true },
     )
 
     if (!task) throw new NotFoundException('Task not updated')

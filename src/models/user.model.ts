@@ -1,9 +1,9 @@
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose'
-import { Document, Types } from 'mongoose'
-import { Company } from '@/models/company.model'
+import { Document, HydratedDocument, Types } from 'mongoose'
+import { Company, CompanyDocument } from '@/models/company.model'
 import { UserCompany } from '@/models/user-company.model'
 
-@Schema({ timestamps: true })
+@Schema({ timestamps: true, toJSON: { virtuals: true }, toObject: { virtuals: true } })
 export class User extends Document {
   @Prop({
     required: true,
@@ -32,7 +32,7 @@ export class User extends Document {
   password: string
 
   @Prop({ type: Types.ObjectId, ref: 'Company' })
-  currentCompanyId: Company
+  currentCompanyId: Types.ObjectId
 
   @Prop()
   lang: string
@@ -40,11 +40,19 @@ export class User extends Document {
   @Prop()
   personal: boolean
 
-  @Prop()
-  createdBy: string
-
-  @Prop()
-  updatedBy: string
+  @Prop({ default: 'avatar.png' })
+  avatar: string
 }
 
 export const UserSchema = SchemaFactory.createForClass(User)
+
+UserSchema.virtual('currentCompany', {
+  ref: 'Company',
+  localField: 'currentCompanyId',
+  foreignField: '_id',
+  justOne: true,
+})
+
+export interface UserDocument extends HydratedDocument<User> {
+  currentCompany: CompanyDocument
+}

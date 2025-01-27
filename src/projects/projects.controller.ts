@@ -8,6 +8,7 @@ import {
   Delete,
   Request,
   Put,
+  Query,
 } from '@nestjs/common'
 import { ProjectsService } from './projects.service'
 import { CreateProjectDto } from './dto/create-project.dto'
@@ -33,8 +34,12 @@ export class ProjectsController {
   }
 
   @Get(':id')
-  findOne(@Param('id', ParseMongoIdPipe) id: string) {
-    return this.projectsService.findOne(id)
+  findOne(
+    @Param('id', ParseMongoIdPipe) id: string,
+    @Query('withMembers') withMembers: boolean = false,
+    @Request() req: RequestWithUser,
+  ) {
+    return this.projectsService.findOne(id, req.user, withMembers)
   }
 
   @Patch(':id')
@@ -54,7 +59,8 @@ export class ProjectsController {
   setProjectUsers(
     @Param('id', ParseMongoIdPipe) id: string,
     @Body() addProjectUsersDto: AddProjectUsersDto,
+    @Request() req: RequestWithUser,
   ) {
-    return this.projectsService.setProjectUsers(id, addProjectUsersDto)
+    return this.projectsService.setProjectUsers(id, addProjectUsersDto, req.user)
   }
 }

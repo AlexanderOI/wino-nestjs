@@ -18,5 +18,6 @@ import { UserCompany } from '@/models/user-company.model'
     ]),
     CompanyModule,
   ],
+  exports: [UserService],
 })
 export class UserModule {}

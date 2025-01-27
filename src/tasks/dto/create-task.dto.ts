@@ -14,7 +14,8 @@ export class CreateTaskDto {
 
   @IsString()
   @IsOptional()
-  assignedTo: string
+  @Transform(({ value }) => toObjectId(value))
+  assignedToId: ObjectId
 
   @IsNumber()
   @IsOptional()

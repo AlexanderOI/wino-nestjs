@@ -2,14 +2,14 @@ import { BadRequestException, Injectable } from '@nestjs/common'
 import { CreateUserDto } from './dto/create-user.dto'
 import { UpdateUserDto } from './dto/update-user.dto'
 import { User } from '@/models/user.model'
-import { Model } from 'mongoose'
+import { Model, Types } from 'mongoose'
 import { InjectModel } from '@nestjs/mongoose'
 import { UserAuth } from 'types'
 import { CompanyService } from '@/company/company.service'
 import { hash } from 'bcrypt'
-import { Role } from '@/models/role.model'
-import { UserCompany } from '@/models/user-company.model'
+import { UserCompany, UserCompanyDocument } from '@/models/user-company.model'
 import { toObjectId } from '@/common/transformer.mongo-id'
+import { UserResponse } from './interfaces/user-response'
 
 @Injectable()
 export class UserService {
@@ -17,12 +17,12 @@ export class UserService {
     @InjectModel(User.name)
     private userModel: Model<User>,
     @InjectModel(UserCompany.name)
-    private userCompanyModel: Model<UserCompany>,
+    private userCompanyModel: Model<UserCompanyDocument>,
     private companyService: CompanyService,
   ) {}
 
   async create(createUserDto: CreateUserDto, user: UserAuth) {
-    const { password, confirmPassword, roles, ...userData } = createUserDto
+    const { password, confirmPassword, roles, roleType, ...userData } = createUserDto
 
     if (password !== confirmPassword) {
       throw new BadRequestException('Passwords do not match')
@@ -30,13 +30,15 @@ export class UserService {
 
     const newUser = await this.userModel.create({
       ...userData,
+      currentCompanyId: user.companyId,
       password: await hash(password, 10),
     })
 
     const userCompany = await this.userCompanyModel.create({
-      user: newUser._id,
-      company: user.companyId,
-      roles: toObjectId(roles),
+      userId: newUser._id,
+      companyId: user.companyId,
+      rolesId: toObjectId(roles),
+      roleType,
     })
 
     await this.companyService.addUserToCompany(userCompany)
@@ -44,39 +46,54 @@ export class UserService {
     return newUser
   }
 
-  async findAll(user: UserAuth) {
-    const userCompany = await this.userCompanyModel.find({
-      company: user.companyId,
-    })
+  async findAll(
+    user: UserAuth,
+    usersIds?: Types.ObjectId[],
+    withRoles = true,
+  ): Promise<UserResponse[]> {
+    let populate = [{ path: 'user' }]
 
-    const users = await this.userModel.find({
-      _id: { $in: userCompany.map((userCompany) => userCompany.user) },
+    if (withRoles) {
+      populate.push({ path: 'roles' })
+    }
+
+    const userCompany = await this.userCompanyModel
+      .find({
+        companyId: user.companyId,
+        ...(usersIds ? { userId: { $in: usersIds } } : {}),
+      })
+      .populate(populate)
+      .lean()
+
+    const users = userCompany.map((userCompany) => {
+      return this.createUserResponse(userCompany)
     })
 
     return users
   }
 
-  async findOne(id: string, userAuth: UserAuth) {
-    const user = await this.userModel.findById(id).exec()
+  async findOne(
+    id: string | Types.ObjectId,
+    userAuth: UserAuth,
+    withRoles = true,
+  ): Promise<UserResponse> {
+    let populate = [{ path: 'user' }]
 
-    if (!user) throw new BadRequestException('User not found')
+    if (withRoles) {
+      populate.push({ path: 'roles' })
+    }
 
     const userCompany = await this.userCompanyModel
       .findOne({
-        user: user._id,
-        company: userAuth.companyId,
+        userId: id,
+        companyId: userAuth.companyId,
       })
-      .exec()
+      .populate(populate)
+      .lean()
 
-    const { password, ...userWithoutPassword } = user.toObject()
+    const userResponse = this.createUserResponse(userCompany)
 
-    const userWithRoles = {
-      ...userWithoutPassword,
-      roles: userCompany?.roles,
-      roleType: userCompany?.roleType,
-    }
-
-    return userWithRoles
+    return userResponse
   }
 
   async update(id: string, updateUserDto: UpdateUserDto, userAuth: UserAuth) {
@@ -97,8 +114,8 @@ export class UserService {
     if (!updatedUser) throw new BadRequestException('User not found')
 
     await this.userCompanyModel.findOneAndUpdate(
-      { user: id, company: userAuth.companyId },
-      { $set: { roles: toObjectId(roles) } },
+      { userId: id, companyId: userAuth.companyId },
+      { $set: { rolesId: toObjectId(roles) } },
     )
 
     return 'User updated'
@@ -110,11 +127,11 @@ export class UserService {
     if (!user) throw new BadRequestException('User not found')
 
     await this.userCompanyModel.findOneAndDelete({
-      user: id,
-      company: userAuth.companyId,
+      userId: id,
+      companyId: userAuth.companyId,
     })
 
-    const userCompany = await this.userCompanyModel.find({ user: id })
+    const userCompany = await this.userCompanyModel.find({ userId: id })
 
     if (userCompany.length === 0) {
       await this.userModel.findByIdAndDelete(id)
@@ -123,7 +140,7 @@ export class UserService {
     }
 
     await this.userModel.findByIdAndUpdate(id, {
-      $set: { currentCompanyId: userCompany[0].company },
+      $set: { currentCompanyId: userCompany[0].companyId },
     })
 
     return 'User connected to another company'
@@ -139,5 +156,23 @@ export class UserService {
     if (!updatedUser) throw new BadRequestException('User not found')
 
     return 'Successfully changed company'
+  }
+
+  createUserResponse(userCompany: UserCompanyDocument): UserResponse {
+    const { user, roles, roleType, isActive, companyId } = userCompany
+    const { _id, name, userName, email, avatar } = user
+
+    return {
+      _id: _id.toString(),
+      name,
+      userName,
+      email,
+      avatar,
+      roles: roles?.map((role) => role.name),
+      rolesId: roles?.map((role) => role._id.toString()),
+      roleType,
+      isActive,
+      company: companyId.toString(),
+    }
   }
 }

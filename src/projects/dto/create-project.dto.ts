@@ -1,5 +1,7 @@
-import { Type } from 'class-transformer'
-import { IsString, IsArray, IsNotEmpty, IsDate } from 'class-validator'
+import { toObjectId } from '@/common/transformer.mongo-id'
+import { Transform, Type } from 'class-transformer'
+import { IsString, IsNotEmpty, IsDate } from 'class-validator'
+import { ObjectId } from 'mongoose'
 
 export class CreateProjectDto {
   @IsNotEmpty()
@@ -11,8 +13,8 @@ export class CreateProjectDto {
   description: string
 
   @IsNotEmpty()
-  @IsString()
-  owner: string
+  @Transform(({ value }) => toObjectId(value))
+  leaderId: ObjectId
 
   @IsNotEmpty()
   @IsString()

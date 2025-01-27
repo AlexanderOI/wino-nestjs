@@ -23,7 +23,7 @@ export class TasksService {
     const { limit = 10, offset = 0 } = paginationDto
     const tasks = await this.taskModel
       .find({ projectId })
-      .populate('columnId')
+      .populate([{ path: 'column' }, { path: 'assignedTo' }])
       .limit(limit)
       .skip(offset)
 
@@ -35,15 +35,7 @@ export class TasksService {
   async findOne(id: string): Promise<Partial<Task>> {
     const task = await this.taskModel
       .findById(id)
-      .populate([
-        {
-          path: 'columnId',
-          select: 'name',
-        },
-        {
-          path: 'assignedTo',
-        },
-      ])
+      .populate([{ path: 'column' }, { path: 'assignedTo' }, { path: 'project' }])
       .exec()
 
     if (!task) throw new NotFoundException('Task not found')

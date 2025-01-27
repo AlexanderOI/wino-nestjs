@@ -16,7 +16,7 @@ import { RequestWithUser } from 'types'
 import { ParseMongoIdPipe } from '@/common/parse-mongo-id.pipe'
 
 @Auth()
-@Controller('user')
+@Controller('users')
 export class UserController {
   constructor(private readonly userService: UserService) {}
 

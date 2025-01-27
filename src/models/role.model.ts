@@ -13,12 +13,6 @@ export class Role extends Document {
 
   @Prop({ type: [{ type: Types.ObjectId, ref: 'Permission' }] })
   permissions: Permission[]
-
-  @Prop({ type: Types.ObjectId, ref: 'User' })
-  createdBy?: User
-
-  @Prop({ type: Types.ObjectId, ref: 'User' })
-  updatedBy?: User
 }
 
 export const RoleSchema = SchemaFactory.createForClass(Role)

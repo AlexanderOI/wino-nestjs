@@ -1,10 +1,10 @@
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose'
-import { Document, Types } from 'mongoose'
+import { Document, Types, HydratedDocument } from 'mongoose'
 import { User } from '@/models/user.model'
 import { Role } from '@/models/role.model'
 import { UserCompany } from './user-company.model'
 
-@Schema({ timestamps: true })
+@Schema({ timestamps: true, toJSON: { virtuals: true }, toObject: { virtuals: true } })
 export class Company extends Document {
   @Prop({
     required: true,
@@ -17,7 +17,7 @@ export class Company extends Document {
   address: String
 
   @Prop({ type: [{ type: Types.ObjectId, ref: 'Role' }] })
-  roles: Role[]
+  rolesId: Types.ObjectId[]
 
   @Prop({ type: Types.ObjectId, ref: 'User' })
   owner: User
@@ -27,12 +27,16 @@ export class Company extends Document {
 
   @Prop({ default: false })
   isMain: Boolean
-
-  @Prop()
-  createdBy: string
-
-  @Prop()
-  updatedBy: string
 }
 
 export const CompanySchema = SchemaFactory.createForClass(Company)
+
+CompanySchema.virtual('roles', {
+  ref: 'Role',
+  localField: 'rolesId',
+  foreignField: '_id',
+})
+
+export interface CompanyDocument extends HydratedDocument<Company> {
+  roles: Role[]
+}

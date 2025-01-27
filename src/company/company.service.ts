@@ -1,25 +1,25 @@
 import { BadRequestException, Injectable } from '@nestjs/common'
 import { CreateCompanyDto } from './dto/create-company.dto'
 import { UpdateCompanyDto } from './dto/update-company.dto'
-import { Company } from '../models/company.model'
+import { Company, CompanyDocument } from '../models/company.model'
 import { InjectModel } from '@nestjs/mongoose'
 import { Model, Types } from 'mongoose'
 import { UserAuth } from 'types'
 import { Role } from '@/models/role.model'
 import { Permission } from '@/models/permission.model'
-import { UserCompany } from '@/models/user-company.model'
+import { UserCompany, UserCompanyDocument } from '@/models/user-company.model'
 
 @Injectable()
 export class CompanyService {
   constructor(
     @InjectModel(Company.name)
-    private companyModel: Model<Company>,
+    private companyModel: Model<CompanyDocument>,
     @InjectModel(Role.name)
     private roleModel: Model<Role>,
     @InjectModel(Permission.name)
     private permissionModel: Model<Permission>,
     @InjectModel(UserCompany.name)
-    private userCompanyModel: Model<UserCompany>,
+    private userCompanyModel: Model<UserCompanyDocument>,
   ) {}
 
   async create(createCompanyDto: CreateCompanyDto, user: UserAuth): Promise<Company> {
@@ -29,22 +29,19 @@ export class CompanyService {
       name: 'Admin',
       description: 'Admin role for new company',
       permissions: permissions.map((permission) => permission._id),
-      createdBy: user._id,
     })
 
     const company = await this.companyModel.create({
       ...createCompanyDto,
       owner: user._id,
-      createdBy: user._id,
       roles: [role._id],
     })
 
     const userCompany = await this.userCompanyModel.create({
-      user: user._id,
-      company: company._id,
+      userId: user._id,
+      companyId: company._id,
       roleType: 'admin',
-      roles: [role._id],
-      createdBy: user._id,
+      rolesId: [role._id],
     })
 
     await company.updateOne({ usersCompany: [userCompany._id] })
@@ -57,32 +54,22 @@ export class CompanyService {
       .find({
         $or: [
           { owner: new Types.ObjectId(userId) },
-          { usersCompany: { $elemMatch: { user: new Types.ObjectId(userId) } } },
+          { usersCompany: { $elemMatch: { userId: new Types.ObjectId(userId) } } },
         ],
       })
-      .populate([
-        {
-          path: 'owner',
-          select: 'name',
-        },
-        {
-          path: 'usersCompany',
-          select: 'user',
-          model: 'UserCompany',
-        },
-      ])
+      .populate([{ path: 'owner', select: 'name avatar' }])
+      .select('-updatedAt -createdAt -__v')
+      .lean()
 
-    const companiesWithUsers = companies.map((company) => {
-      const { usersCompany, ...companyWithoutUsers } = company.toObject()
-      const users = usersCompany.map((userCompany) => userCompany.user)
-      return { ...companyWithoutUsers, users }
-    })
-
-    return companiesWithUsers
+    return companies
   }
 
   async findOne(id: string): Promise<Company> {
-    const company = await this.companyModel.findById(id)
+    const company = await this.companyModel
+      .findById(id)
+      .populate([{ path: 'owner', select: 'name avatar' }])
+      .select('-updatedAt -createdAt -__v')
+      .lean()
 
     if (!company) throw new BadRequestException('Company not found')
 
@@ -94,10 +81,7 @@ export class CompanyService {
     updateCompanyDto: UpdateCompanyDto,
     user: UserAuth,
   ): Promise<Company> {
-    const updatedCompany = await this.companyModel.findByIdAndUpdate(id, {
-      ...updateCompanyDto,
-      updatedBy: user._id,
-    })
+    const updatedCompany = await this.companyModel.findByIdAndUpdate(id, updateCompanyDto)
 
     if (!updatedCompany) throw new BadRequestException('Company not found')
 
@@ -113,7 +97,7 @@ export class CompanyService {
   }
 
   async addUserToCompany(userCompany: UserCompany) {
-    const company = await this.companyModel.findByIdAndUpdate(userCompany.company, {
+    const company = await this.companyModel.findByIdAndUpdate(userCompany.companyId, {
       $push: { usersCompany: userCompany._id },
     })
 
@@ -121,7 +105,7 @@ export class CompanyService {
   }
 
   async removeUserFromCompany(userCompany: UserCompany) {
-    const company = await this.companyModel.findByIdAndUpdate(userCompany.company, {
+    const company = await this.companyModel.findByIdAndUpdate(userCompany.companyId, {
       $pull: { usersCompany: userCompany._id },
     })
 

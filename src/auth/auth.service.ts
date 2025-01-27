@@ -5,29 +5,32 @@ import {
   NotFoundException,
   UnauthorizedException,
 } from '@nestjs/common'
+
 import { InjectModel } from '@nestjs/mongoose'
 import { JwtService } from '@nestjs/jwt'
 import { Model } from 'mongoose'
 
-import { User } from '../models/user.model'
-import { Company } from '@/models/company.model'
+import { User, UserDocument } from '../models/user.model'
+import { Company, CompanyDocument } from '@/models/company.model'
 import { Role } from '@/models/role.model'
 import { Permission } from '@/models/permission.model'
-import { UserCompany } from '@/models/user-company.model'
+import { UserCompany, UserCompanyDocument } from '@/models/user-company.model'
 
 import { RegisterAuthDto } from './dto/register.dto'
 import { LoginAuthDto } from './dto/login.dto'
 import { UserAuth } from 'types'
+import { UserPayload } from './interfaces/user-payload'
 
 @Injectable()
 export class AuthService {
   constructor(
     private jwtAuthService: JwtService,
-    @InjectModel(User.name) private readonly userModel: Model<User>,
-    @InjectModel(Company.name) private readonly companyModel: Model<Company>,
+    @InjectModel(User.name) private readonly userModel: Model<UserDocument>,
+    @InjectModel(Company.name) private readonly companyModel: Model<CompanyDocument>,
     @InjectModel(Role.name) private readonly roleModel: Model<Role>,
     @InjectModel(Permission.name) private readonly permissioModel: Model<Permission>,
-    @InjectModel(UserCompany.name) private readonly userCompanyModel: Model<UserCompany>,
+    @InjectModel(UserCompany.name)
+    private readonly userCompanyModel: Model<UserCompanyDocument>,
   ) {}
 
   async register(userRegister: RegisterAuthDto) {
@@ -59,7 +62,6 @@ export class AuthService {
       name: 'Admin',
       description: 'Admin role for new users',
       permissions: permissions.map((permission) => permission._id),
-      createdBy: user._id,
     })
 
     const company = await this.companyModel.create({
@@ -67,16 +69,14 @@ export class AuthService {
       description: 'Default company for new users',
       isMain: true,
       owner: user._id,
-      createdBy: user._id,
-      roles: [role._id],
+      rolesId: [role._id],
     })
 
     const userCompany = await this.userCompanyModel.create({
-      user: user._id,
-      company: company._id,
+      userId: user._id,
+      companyId: company._id,
       roleType: 'admin',
-      roles: [role._id],
-      createdBy: user._id,
+      rolesId: [role._id],
     })
 
     await company.updateOne({ usersCompany: [userCompany._id] })
@@ -129,15 +129,14 @@ export class AuthService {
     }
   }
 
-  async createUserPayload(userName: string) {
+  async createUserPayload(userNameFind: string): Promise<UserPayload> {
     const populatedUser = await this.userModel
-      .findOne({ userName })
+      .findOne({ userName: userNameFind })
       .populate({
-        path: 'currentCompanyId',
-        select: 'name address roles',
+        path: 'currentCompany',
+        select: 'name address rolesId',
         populate: {
           path: 'roles',
-          model: 'Role',
           select: 'name permissions',
           populate: {
             path: 'permissions',
@@ -148,28 +147,31 @@ export class AuthService {
       })
       .lean()
 
-    const userCompany = await this.userCompanyModel.findOne({
-      user: populatedUser._id,
-      company: populatedUser.currentCompanyId._id,
-    })
+    const userCompany = await this.userCompanyModel
+      .findOne({
+        userId: populatedUser._id,
+        companyId: populatedUser.currentCompany._id,
+      })
+      .lean()
 
-    const permissions = populatedUser.currentCompanyId.roles
+    const permissions = populatedUser.currentCompany.roles
       .map((role) => role.permissions.map((permission) => permission.name))
       .flat()
 
-    const company = populatedUser.currentCompanyId
+    const company = populatedUser.currentCompany
 
-    const { password: _, _id, __v, ...userData } = populatedUser
-
-    delete userData.currentCompanyId
+    const { name, userName, email, _id, avatar } = populatedUser
 
     const userDataPayload = {
-      ...userData,
-      _id,
+      _id: _id.toString(),
+      name,
+      userName,
+      email,
+      avatar,
       roleType: userCompany.roleType,
-      companyId: company._id,
-      companyName: company.name,
-      companyAddress: company.address,
+      companyId: company._id.toString(),
+      companyName: company.name.toString(),
+      companyAddress: company.address.toString(),
       permissions,
     }
 

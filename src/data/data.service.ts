@@ -42,7 +42,10 @@ export class DataService {
   }
 
   private async insertCompany() {
-    const company = await this.companyModel.create(initialCompany)
+    const company = await this.companyModel.create({
+      ...initialCompany,
+      isMain: true,
+    })
     return company
   }
 
@@ -73,17 +76,16 @@ export class DataService {
       })
 
       const userCompany = await this.userCompanyModel.create({
-        user: user._id,
-        company: company._id,
-        roles: [role._id],
+        userId: user._id,
+        companyId: company._id,
+        rolesId: [role._id],
         roleType: userData.roleType,
-        createdBy: user._id,
       })
 
       await this.companyModel.findByIdAndUpdate(company._id, {
         $push: {
           usersCompany: userCompany._id,
-          roles: role._id,
+          rolesId: role._id,
         },
         owner: userData.roleType === 'admin' ? user._id : company.owner,
       })

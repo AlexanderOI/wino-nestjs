@@ -10,6 +10,9 @@ export class ColumnTask extends Document {
   @Prop({ required: true, default: 0 })
   order: number
 
+  @Prop({ required: true, default: '#00FF00' })
+  color: string
+
   @Prop({ type: Types.ObjectId, ref: 'Project', required: true })
   projectId: Project
 

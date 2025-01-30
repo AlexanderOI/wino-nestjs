@@ -15,10 +15,10 @@ export class ColumnsService {
 
   async createDefaultColumns(projectId: unknown) {
     const defaultColumns = [
-      { name: 'Pending', order: 0 },
-      { name: 'In Progress', order: 1 },
-      { name: 'Paused', order: 2 },
-      { name: 'Completed', order: 3 },
+      { name: 'Pending', color: '#FF6B6B', order: 0 },
+      { name: 'In Progress', color: '#FFD93D', order: 1 },
+      { name: 'Paused', color: '#6C5CE7', order: 2 },
+      { name: 'Completed', color: '#27AE60', order: 3 },
     ]
 
     const columns = await Promise.all(

@@ -2,7 +2,7 @@ import { Injectable, NotFoundException } from '@nestjs/common'
 import { CreateProjectDto } from './dto/create-project.dto'
 import { UpdateProjectDto } from './dto/update-project.dto'
 import { UserAuth } from 'types'
-import { Model } from 'mongoose'
+import { Model, Types } from 'mongoose'
 import { Project, ProjectDocument } from '@/models/project.model'
 import { User } from '@/models/user.model'
 import { InjectModel } from '@nestjs/mongoose'
@@ -51,7 +51,11 @@ export class ProjectsService {
     return projectsResponse
   }
 
-  async findOne(id: string, userAuth: UserAuth, withMembers = false): Promise<any> {
+  async findOne(
+    id: string | Types.ObjectId,
+    userAuth: UserAuth,
+    withMembers = false,
+  ): Promise<Project> {
     const project = await this.projectModel
       .findById(id)
       .select('-updatedAt -createdAt -__v')
@@ -92,7 +96,9 @@ export class ProjectsService {
     addProjectUsersDto: AddProjectUsersDto,
     userAuth: UserAuth,
   ) {
-    const project = await this.findOne(id, userAuth, false)
+    const project = await this.projectModel.findById(id)
+
+    if (!project) throw new NotFoundException('Project not found')
 
     const users = await this.userModel.find({
       _id: { $in: addProjectUsersDto.membersId },

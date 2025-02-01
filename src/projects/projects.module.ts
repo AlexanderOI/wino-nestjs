@@ -21,5 +21,6 @@ import { UserModule } from '@/user/user.module'
     ColumnsModule,
     UserModule,
   ],
+  exports: [ProjectsService],
 })
 export class ProjectsModule {}

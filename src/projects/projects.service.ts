@@ -32,9 +32,12 @@ export class ProjectsService {
     return project
   }
 
-  async findAll(userAuth: UserAuth): Promise<any[]> {
+  async findAll(userAuth: UserAuth, projectIds?: Types.ObjectId[]): Promise<any[]> {
     const projects = await this.projectModel
-      .find({ company: userAuth.companyId })
+      .find({
+        company: userAuth.companyId,
+        ...(projectIds ? { _id: { $in: projectIds } } : {}),
+      })
       .select('-updatedAt -createdAt -__v')
       .lean()
 

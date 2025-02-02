@@ -1,4 +1,4 @@
-import { BadRequestException, Injectable } from '@nestjs/common'
+import { BadRequestException, Injectable, NotFoundException } from '@nestjs/common'
 import { CreateUserDto } from './dto/create-user.dto'
 import { UpdateUserDto } from './dto/update-user.dto'
 import { User } from '@/models/user.model'
@@ -90,6 +90,8 @@ export class UserService {
       })
       .populate(populate)
       .lean()
+
+    if (!userCompany) throw new NotFoundException('User not found')
 
     const userResponse = this.createUserResponse(userCompany)
 

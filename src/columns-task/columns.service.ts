@@ -15,10 +15,10 @@ export class ColumnsService {
 
   async createDefaultColumns(projectId: unknown) {
     const defaultColumns = [
-      { name: 'Pending', color: '#FF6B6B', order: 0 },
-      { name: 'In Progress', color: '#FFD93D', order: 1 },
-      { name: 'Paused', color: '#6C5CE7', order: 2 },
-      { name: 'Completed', color: '#27AE60', order: 3 },
+      { name: 'Pending', color: '#0000ff', order: 0 },
+      { name: 'In Progress', color: '#ffff00', order: 1 },
+      { name: 'Paused', color: '#868179', order: 2 },
+      { name: 'Completed', color: '#00ff00', order: 3 },
     ]
 
     const columns = await Promise.all(
@@ -47,6 +47,14 @@ export class ColumnsService {
     })
 
     return newColumn
+  }
+
+  async findOne(columnId: string) {
+    const column = await this.columnTaskModel.findById(columnId)
+
+    if (!column) throw new NotFoundException('Columna no encontrada')
+
+    return column
   }
 
   async update(columnId: string, updateColumnDto: UpdateColumnTaskDto) {

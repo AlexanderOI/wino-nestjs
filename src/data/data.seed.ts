@@ -2,6 +2,7 @@ import { CreateUserDto } from '@/user/dto/create-user.dto'
 import { CreateCompanyDto } from '@/company/dto/create-company.dto'
 import { CreateRoleDto } from '@/roles/dto/create-role.dto'
 import { PERMISSIONS } from '@/permissions/constants/permissions'
+import { CreateProjectDto } from '@/projects/dto/create-project.dto'
 
 export const initialCompany: CreateCompanyDto = {
   name: 'Empresa Inicial',
@@ -183,5 +184,88 @@ export const initialUsers: CreateUserDto[] = [
     confirmPassword: '1234',
     roles: [],
     roleType: 'user',
+  },
+]
+
+export const initialProjects = [
+  {
+    name: 'WINO - Project and Task Manager',
+    description:
+      'Este proyecto comenzó como practica de Nextjs y Nestjs, luego decidí agregarle MongoDB para practica de Bases de datos no relacionales',
+    client: 'Alexander OI',
+    status: 'In Progress',
+    startDate: new Date('2024-01-01'),
+    endDate: new Date('2024-02-06'),
+    leaderId: '',
+  },
+  {
+    name: 'EXO – Expense Organizer',
+    description:
+      'Este proyecto será hecho con React Native y Nestjs para navegar un poco por el mundo del desarrollo movile',
+    client: 'Alexander OI',
+    status: 'Pending',
+    startDate: new Date('2024-02-07'),
+    endDate: new Date('2024-02-28'),
+    leaderId: '',
+  },
+
+  {
+    name: 'BOW - Battle of Words',
+    description:
+      'Juego de batalla de palabras donde dos jugadores tendrán que escribir los mas rápido posible de acuerdo a la palabra asignada con distintas mecánicas, será hecho en React y Nestjs',
+    client: 'Alexander OI',
+    status: 'Pending',
+    startDate: new Date('2024-03-01'),
+    endDate: new Date('2024-03-31'),
+    leaderId: '',
+  },
+
+  {
+    name: 'LINKIO - Link Interaction Online',
+    description:
+      'Aplicación de envió de mensajes en tiempo real, este proyecto será desarrollado en React y Nestjs',
+    client: 'Alexander OI',
+    status: 'Pending',
+    startDate: new Date('2024-04-01'),
+    endDate: new Date('2024-04-30'),
+    leaderId: '',
+  },
+]
+
+export const initialTasks = [
+  {
+    name: 'Agregar los roles que faltan',
+    description: 'Agregar los roles que faltan para que el usuario pueda ver los roles',
+    column: 0,
+  },
+  {
+    name: 'Mejorar la vista de roles',
+    description: 'Mejorar la vista de roles para que el usuario pueda ver los roles',
+    column: 0,
+  },
+
+  {
+    name: 'Agregar skeleton a la pagina de tareas',
+    description:
+      'Agregar skeleton a la pagina de tareas para que el usuario pueda ver los tareas',
+    column: 3,
+  },
+  {
+    name: 'Crear un dashboard general',
+    description: 'Crear un dashboard general para que el usuario pueda ver los proyectos',
+    column: 1,
+  },
+  {
+    name: 'Refactorizacion de forma de datos',
+    description:
+      'Refactorizacion de forma de datos para que el usuario pueda ver los datos',
+    column: 2,
+  },
+
+  {
+    name: 'Crear la página de proyectos',
+    description:
+      'Crear la página de proyectos para que el usuario pueda ver los proyectos',
+    column: 3,
   },
 ]

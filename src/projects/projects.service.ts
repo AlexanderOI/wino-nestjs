@@ -42,13 +42,16 @@ export class ProjectsService {
       .lean()
 
     const projectsResponse = await Promise.all(
-      projects.map(async (project) => {
-        return {
+      projects.map((project) =>
+        Promise.all([
+          this.userService.findAll(userAuth, project.membersId, false),
+          this.userService.findOne(project.leaderId, userAuth, false),
+        ]).then(([members, leader]) => ({
           ...project,
-          members: await this.userService.findAll(userAuth, project.membersId, false),
-          leader: await this.userService.findOne(project.leaderId, userAuth, false),
-        }
-      }),
+          members,
+          leader,
+        })),
+      ),
     )
 
     return projectsResponse
@@ -111,6 +114,6 @@ export class ProjectsService {
 
     await project.updateOne({ membersId: users.map((user) => user._id) })
 
-    return project.membersId
+    return project
   }
 }

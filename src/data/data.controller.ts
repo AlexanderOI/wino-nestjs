@@ -7,11 +7,10 @@ export class DataController {
 
   @Get('create')
   create() {
-    return this.dataService.create()
-  }
+    if (process.env.ENV === 'development') {
+      return this.dataService.create()
+    }
 
-  @Get('delete')
-  deleteAll() {
-    return this.dataService.deleteAll()
+    return { message: 'No se puede crear datos en producción' }
   }
 }

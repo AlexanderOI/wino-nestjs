@@ -171,7 +171,7 @@ export class AuthService {
       roleType: userCompany.roleType,
       companyId: company._id.toString(),
       companyName: company.name.toString(),
-      companyAddress: company.address.toString(),
+      companyAddress: company.address?.toString(),
       permissions,
     }
 

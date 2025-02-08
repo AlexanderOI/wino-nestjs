@@ -81,7 +81,6 @@ export class TasksService {
 
   async remove(id: string, userAuth: UserAuth) {
     const task = await this.taskModel.findByIdAndDelete(id)
-
     if (!task) throw new NotFoundException('Task not deleted')
 
     await this.registerActivity(task, 'deleted', userAuth)
@@ -106,7 +105,6 @@ export class TasksService {
       .populate([
         { path: 'user', select: 'name email avatar' },
         { path: 'company', select: 'name' },
-        { path: 'task', select: 'name' },
       ])
       .select('-__v')
       .lean()
@@ -119,11 +117,6 @@ export class TasksService {
       .populate([
         { path: 'user', select: 'name email avatar' },
         { path: 'company', select: 'name' },
-        {
-          path: 'task',
-          select: '-__v',
-          populate: { path: 'column', select: '-__v' },
-        },
       ])
 
       .select('-__v')
@@ -154,8 +147,11 @@ export class TasksService {
       .replace('{userName}', userAuth.name)
       .replace('{newValue}', newValue)
 
+    const column = await this.columnsService.findOne(task.columnId.toString())
+
     await this.activityModel.create({
-      taskId: task._id,
+      task: task,
+      column: column,
       type: key,
       text: text,
       previousValue,

@@ -4,11 +4,15 @@ import { Task } from './task.model'
 import { User } from './user.model'
 import { Company } from './company.model'
 import { Project } from './project.model'
+import { ColumnTask } from './column-task.model'
 
 @Schema({ timestamps: true, toJSON: { virtuals: true }, toObject: { virtuals: true } })
 export class Activity extends Document {
-  @Prop({ required: true, type: Types.ObjectId, ref: 'Task' })
-  taskId: Types.ObjectId
+  @Prop({ required: true, type: Task })
+  task: Task
+
+  @Prop({ required: true, type: ColumnTask })
+  column: ColumnTask
 
   @Prop({ required: true })
   type: string
@@ -33,13 +37,6 @@ export class Activity extends Document {
 }
 
 export const ActivitySchema = SchemaFactory.createForClass(Activity)
-
-ActivitySchema.virtual('task', {
-  ref: 'Task',
-  localField: 'taskId',
-  foreignField: '_id',
-  justOne: true,
-})
 
 ActivitySchema.virtual('user', {
   ref: 'User',

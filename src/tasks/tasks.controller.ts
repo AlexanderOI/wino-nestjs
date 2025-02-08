@@ -51,6 +51,7 @@ export class TasksController {
     return this.tasksService.update(id, updateTaskDto, req.user)
   }
 
+  @Delete(':id')
   remove(@Param('id', ParseMongoIdPipe) id: string, @Request() req: RequestWithUser) {
     return this.tasksService.remove(id, req.user)
   }

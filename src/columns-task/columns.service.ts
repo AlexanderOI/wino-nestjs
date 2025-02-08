@@ -1,4 +1,4 @@
-import { Injectable, NotFoundException, BadRequestException } from '@nestjs/common'
+import { Injectable, NotFoundException } from '@nestjs/common'
 import { InjectModel } from '@nestjs/mongoose'
 import { Model } from 'mongoose'
 import { ColumnTask } from '@/models/column-task.model'
@@ -52,7 +52,7 @@ export class ColumnsService {
   async findOne(columnId: string) {
     const column = await this.columnTaskModel.findById(columnId)
 
-    if (!column) throw new NotFoundException('Columna no encontrada')
+    if (!column) throw new NotFoundException('Column not found')
 
     return column
   }
@@ -65,22 +65,19 @@ export class ColumnsService {
         new: true,
       },
     )
-    if (!column) throw new NotFoundException('Columna no encontrada')
+    if (!column) throw new NotFoundException('Column not found')
 
     return column
   }
 
   async remove(columnId: string) {
     const column = await this.columnTaskModel.findById(columnId)
-    if (!column) throw new NotFoundException('Columna no encontrada')
-
-    const tasksInColumn = await this.taskModel.countDocuments({ columnId })
-    if (tasksInColumn > 0) {
-      throw new BadRequestException('No se puede eliminar una columna con tareas')
-    }
+    if (!column) throw new NotFoundException('Column not found')
 
     await column.deleteOne()
-    return { message: 'Columna eliminada exitosamente' }
+    await this.taskModel.deleteMany({ columnId: columnId })
+
+    return { message: 'Column and tasks deleted successfully' }
   }
 
   async findByProject(projectId: string, withTasks: boolean = false) {

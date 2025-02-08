@@ -114,6 +114,6 @@ export class ProjectsService {
 
     await project.updateOne({ membersId: users.map((user) => user._id) })
 
-    return project
+    return project.membersId
   }
 }

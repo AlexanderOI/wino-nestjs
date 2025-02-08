@@ -43,7 +43,7 @@ export class ColumnsController {
   }
 
   @Delete(':id')
-  remove(@Param('id') id: string) {
+  remove(@Param('id', ParseMongoIdPipe) id: string) {
     return this.columnsService.remove(id)
   }
 

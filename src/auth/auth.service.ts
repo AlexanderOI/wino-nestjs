@@ -130,37 +130,37 @@ export class AuthService {
   }
 
   async createUserPayload(userNameFind: string): Promise<UserPayload> {
-    const populatedUser = await this.userModel
+    const user = await this.userModel
       .findOne({ userName: userNameFind })
       .populate({
         path: 'currentCompany',
         select: 'name address rolesId',
-        populate: {
-          path: 'roles',
-          select: 'name permissions',
-          populate: {
-            path: 'permissions',
-            model: 'Permission',
-            select: 'name',
-          },
-        },
       })
       .lean()
 
     const userCompany = await this.userCompanyModel
       .findOne({
-        userId: populatedUser._id,
-        companyId: populatedUser.currentCompany._id,
+        userId: user._id,
+        companyId: user.currentCompany._id,
+      })
+      .populate({
+        path: 'roles',
+        select: 'name permissions',
+        populate: {
+          path: 'permissions',
+          model: 'Permission',
+          select: 'name',
+        },
       })
       .lean()
 
-    const permissions = populatedUser.currentCompany.roles
-      .map((role) => role.permissions.map((permission) => permission.name))
-      .flat()
+    const permissions = userCompany.roles.flatMap((role) =>
+      role.permissions?.map((permission) => permission.name),
+    )
 
-    const company = populatedUser.currentCompany
+    const company = user.currentCompany
 
-    const { name, userName, email, _id, avatar } = populatedUser
+    const { name, userName, email, _id, avatar } = user
 
     const userDataPayload = {
       _id: _id.toString(),

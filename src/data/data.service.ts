@@ -91,6 +91,12 @@ export class DataService {
   private async insertUsers(company: Company, roles: Role[]) {
     let adminUser: UserDocument | null = null
 
+    await this.companyModel.findByIdAndUpdate(company._id, {
+      $push: {
+        rolesId: roles.map((role) => role._id),
+      },
+    })
+
     for (const userData of initialUsers) {
       const hashedPassword = await hash(userData.password, 10)
       const role = roles[userData.roleType === 'admin' ? 0 : 1]
@@ -115,7 +121,6 @@ export class DataService {
       await this.companyModel.findByIdAndUpdate(company._id, {
         $push: {
           usersCompany: userCompany._id,
-          rolesId: role._id,
         },
         owner: userData.roleType === 'admin' ? user._id : company.owner,
       })

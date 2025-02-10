@@ -98,27 +98,25 @@ export class TasksService {
     return 'Tasks reordered'
   }
 
-  async getTaskActivity(taskId: string) {
-    return this.activityModel
-      .find({ taskId: toObjectId(taskId) })
-      .sort({ createdAt: -1 })
-      .populate([
-        { path: 'user', select: 'name email avatar' },
-        { path: 'company', select: 'name' },
-      ])
-      .select('-__v')
-      .lean()
-  }
+  async getTaskActivity(
+    userAuth: UserAuth,
+    projectId?: string,
+    taskId?: string,
+    userId?: string,
+  ) {
+    let filters = {}
 
-  async getTaskActivityByProject(projectId: string) {
+    if (projectId) filters['projectId'] = toObjectId(projectId)
+    if (taskId) filters['taskId'] = toObjectId(taskId)
+    if (userId) filters['userId'] = toObjectId(userId)
+
     let activities = await this.activityModel
-      .find({ projectId: toObjectId(projectId) })
+      .find({ ...filters, companyId: userAuth.companyId })
       .sort({ createdAt: -1 })
       .populate([
         { path: 'user', select: 'name email avatar' },
         { path: 'company', select: 'name' },
       ])
-
       .select('-__v')
       .lean()
 
@@ -150,6 +148,7 @@ export class TasksService {
     const column = await this.columnsService.findOne(task.columnId.toString())
 
     await this.activityModel.create({
+      taskId: task._id,
       task: task,
       column: column,
       type: key,

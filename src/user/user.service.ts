@@ -10,6 +10,7 @@ import { hash } from 'bcrypt'
 import { UserCompany, UserCompanyDocument } from '@/models/user-company.model'
 import { toObjectId } from '@/common/transformer.mongo-id'
 import { UserResponse } from './interfaces/user-response'
+import { CloudinaryService } from '@/cloudinary/cloudinary.service'
 
 @Injectable()
 export class UserService {
@@ -19,6 +20,7 @@ export class UserService {
     @InjectModel(UserCompany.name)
     private userCompanyModel: Model<UserCompanyDocument>,
     private companyService: CompanyService,
+    private readonly cloudinaryService: CloudinaryService,
   ) {}
 
   async create(createUserDto: CreateUserDto, user: UserAuth) {
@@ -158,6 +160,19 @@ export class UserService {
     if (!updatedUser) throw new BadRequestException('User not found')
 
     return 'Successfully changed company'
+  }
+
+  async uploadAvatar(
+    file: Express.Multer.File,
+    user: UserAuth,
+  ): Promise<{ url: string }> {
+    const avatarUrl = await this.cloudinaryService.uploadAvatar(file)
+
+    await this.userModel.findByIdAndUpdate(user._id, {
+      $set: { avatar: avatarUrl },
+    })
+
+    return { url: avatarUrl }
   }
 
   createUserResponse(userCompany: UserCompanyDocument): UserResponse {

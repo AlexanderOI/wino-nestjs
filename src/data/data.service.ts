@@ -92,9 +92,7 @@ export class DataService {
     let adminUser: UserDocument | null = null
 
     await this.companyModel.findByIdAndUpdate(company._id, {
-      $push: {
-        rolesId: roles.map((role) => role._id),
-      },
+      rolesId: roles.map((role) => role._id),
     })
 
     for (const userData of initialUsers) {

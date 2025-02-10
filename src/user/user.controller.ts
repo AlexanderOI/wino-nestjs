@@ -7,6 +7,8 @@ import {
   Param,
   Delete,
   Request,
+  UseInterceptors,
+  UploadedFile,
 } from '@nestjs/common'
 import { UserService } from './user.service'
 import { CreateUserDto } from './dto/create-user.dto'
@@ -14,6 +16,8 @@ import { UpdateUserDto } from './dto/update-user.dto'
 import { Auth } from '@/auth/auth.decorator'
 import { RequestWithUser } from 'types'
 import { ParseMongoIdPipe } from '@/common/parse-mongo-id.pipe'
+import { FileInterceptor } from '@nestjs/platform-express'
+import { multerOptions } from '@/cloudinary/config/multer.config'
 
 @Auth()
 @Controller('users')
@@ -55,5 +59,14 @@ export class UserController {
     @Param('companyId', ParseMongoIdPipe) companyId: string,
   ) {
     return this.userService.changeCurrentCompany(companyId, req.user)
+  }
+
+  @Post('upload-avatar')
+  @UseInterceptors(FileInterceptor('file', multerOptions))
+  async uploadAvatar(
+    @UploadedFile() file: Express.Multer.File,
+    @Request() req: RequestWithUser,
+  ) {
+    return this.userService.uploadAvatar(file, req.user)
   }
 }

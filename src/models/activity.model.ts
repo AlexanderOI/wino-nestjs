@@ -8,6 +8,9 @@ import { ColumnTask } from './column-task.model'
 
 @Schema({ timestamps: true, toJSON: { virtuals: true }, toObject: { virtuals: true } })
 export class Activity extends Document {
+  @Prop({ required: true, type: Types.ObjectId, ref: 'Task' })
+  taskId: Types.ObjectId
+
   @Prop({ required: true, type: Task })
   task: Task
 

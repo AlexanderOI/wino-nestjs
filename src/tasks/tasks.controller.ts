@@ -20,13 +20,23 @@ import { PaginationDto } from '@/common/dto/pagination.dto'
 import { RequestWithUser } from 'types'
 
 @Auth()
-@Controller('tasks/')
+@Controller('tasks')
 export class TasksController {
   constructor(private readonly tasksService: TasksService) {}
 
   @Post()
   create(@Body() createTaskDto: CreateTaskDto, @Request() req: RequestWithUser) {
     return this.tasksService.create(createTaskDto, req.user)
+  }
+
+  @Get('activity')
+  getTaskActivity(
+    @Query('projectId') projectId: string,
+    @Query('taskId') taskId: string,
+    @Query('userId') userId: string,
+    @Request() req: RequestWithUser,
+  ) {
+    return this.tasksService.getTaskActivity(req.user, projectId, taskId, userId)
   }
 
   @Get('project/:projectId')
@@ -39,6 +49,7 @@ export class TasksController {
 
   @Get(':id')
   findOne(@Param('id', ParseMongoIdPipe) id: string, @Request() req: RequestWithUser) {
+    console.log(id)
     return this.tasksService.findOne(id, req.user)
   }
 
@@ -59,15 +70,5 @@ export class TasksController {
   @Put('reorder')
   reorder(@Body() taskOrders: { id: string; order: number }[]) {
     return this.tasksService.reorder(taskOrders)
-  }
-
-  @Get(':id/activity')
-  getTaskActivity(@Param('id', ParseMongoIdPipe) id: string) {
-    return this.tasksService.getTaskActivity(id)
-  }
-
-  @Get('project/:projectId/activity')
-  getTaskActivityByProject(@Param('projectId', ParseMongoIdPipe) projectId: string) {
-    return this.tasksService.getTaskActivityByProject(projectId)
   }
 }

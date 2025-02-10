@@ -7,7 +7,7 @@ import { JwtService } from '@nestjs/jwt'
 import { CompanyModule } from '@/company/company.module'
 import { UserCompanySchema } from '@/models/user-company.model'
 import { UserCompany } from '@/models/user-company.model'
-
+import { CloudinaryModule } from '@/cloudinary/cloudinary.module'
 @Module({
   controllers: [UserController],
   providers: [UserService, JwtService],
@@ -17,6 +17,7 @@ import { UserCompany } from '@/models/user-company.model'
       { name: UserCompany.name, schema: UserCompanySchema },
     ]),
     CompanyModule,
+    CloudinaryModule,
   ],
   exports: [UserService],
 })

@@ -25,6 +25,9 @@ export class Task extends Document {
   @Prop({ type: Types.ObjectId, ref: 'ColumnTask' })
   columnId: Types.ObjectId
 
+  @Prop({ type: Types.ObjectId, ref: 'Company' })
+  companyId: Types.ObjectId
+
   @Prop({ type: Date })
   startDate: Date
 

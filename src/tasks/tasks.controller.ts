@@ -18,6 +18,7 @@ import { Auth } from '@/auth/auth.decorator'
 import { ParseMongoIdPipe } from '@/common/parse-mongo-id.pipe'
 import { PaginationDto } from '@/common/dto/pagination.dto'
 import { RequestWithUser } from 'types'
+import { FilterTaskDto } from './dto/filter-task.dto'
 
 @Auth()
 @Controller('tasks')
@@ -39,12 +40,17 @@ export class TasksController {
     return this.tasksService.getTaskActivity(req.user, projectId, taskId, userId)
   }
 
+  @Get()
+  findAll(@Query() filterTaskDto: FilterTaskDto, @Request() req: RequestWithUser) {
+    return this.tasksService.findAll(filterTaskDto, req.user)
+  }
+
   @Get('project/:projectId')
-  findAll(
+  findByProject(
     @Param('projectId', ParseMongoIdPipe) projectId: string,
     @Query() paginationDto: PaginationDto,
   ) {
-    return this.tasksService.findAll(projectId, paginationDto)
+    return this.tasksService.findByProject(projectId, paginationDto)
   }
 
   @Get(':id')

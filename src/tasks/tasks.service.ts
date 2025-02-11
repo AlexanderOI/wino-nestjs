@@ -12,6 +12,7 @@ import { UserService } from '@/user/user.service'
 import { Activity, ActivityDocument } from '@/models/activity.model'
 import { ColumnsService } from '@/columns-task/columns.service'
 import { format } from 'date-fns'
+import { FilterTaskDto } from './dto/filter-task.dto'
 
 @Injectable()
 export class TasksService {
@@ -24,7 +25,10 @@ export class TasksService {
   ) {}
 
   async create(createTaskDto: CreateTaskDto, userAuth: UserAuth) {
-    const task = await this.taskModel.create(createTaskDto)
+    const task = await this.taskModel.create({
+      ...createTaskDto,
+      companyId: userAuth.companyId,
+    })
     if (!task) throw new NotFoundException('Task not created')
 
     await this.registerActivity(task, 'created', userAuth)
@@ -32,10 +36,45 @@ export class TasksService {
     return task
   }
 
-  async findAll(projectId: string, paginationDto: PaginationDto) {
+  async findAll(filterTaskDto: FilterTaskDto, userAuth: UserAuth) {
+    const {
+      projectId,
+      columnId,
+      assignedToId,
+      status,
+      search,
+      startDate,
+      endDate,
+      fromUpdatedAt,
+      toUpdatedAt,
+    } = filterTaskDto
+    const filters = {}
+
+    if (projectId) filters['projectId'] = projectId
+    if (columnId) filters['columnId'] = columnId
+    if (assignedToId) filters['assignedToId'] = assignedToId
+    if (status) filters['status'] = status
+    if (search) filters['name'] = { $regex: search, $options: 'i' }
+    if (startDate) filters['startDate'] = { $gte: startDate }
+    if (endDate) filters['endDate'] = { $lte: endDate }
+    if (fromUpdatedAt && toUpdatedAt)
+      filters['updatedAt'] = { $gte: fromUpdatedAt, $lte: toUpdatedAt }
+
+    const tasks = await this.taskModel
+      .find({ ...filters })
+      .populate([{ path: 'column' }, { path: 'assignedTo' }])
+      .lean()
+
+    if (!tasks) throw new NotFoundException('Tasks not found')
+
+    return tasks
+  }
+
+  async findByProject(projectId: string, paginationDto: PaginationDto) {
     const { limit = 10, offset = 0 } = paginationDto
     const tasks = await this.taskModel
       .find({ projectId })
+
       .populate([{ path: 'column' }, { path: 'assignedTo' }])
       .limit(limit)
       .skip(offset)

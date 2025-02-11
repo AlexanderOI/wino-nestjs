@@ -117,9 +117,19 @@ export class UserService {
 
     if (!updatedUser) throw new BadRequestException('User not found')
 
+    const updateFields: any = {}
+
+    if (roles && roles.length > 0) {
+      updateFields.rolesId = toObjectId(roles)
+    }
+
+    if (userData.roleType) {
+      updateFields.roleType = userData.roleType
+    }
+
     await this.userCompanyModel.findOneAndUpdate(
       { userId: id, companyId: userAuth.companyId },
-      { $set: { rolesId: toObjectId(roles) } },
+      { $set: updateFields },
     )
 
     return 'User updated'

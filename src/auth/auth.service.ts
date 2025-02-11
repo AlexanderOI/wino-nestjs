@@ -20,6 +20,7 @@ import { RegisterAuthDto } from './dto/register.dto'
 import { LoginAuthDto } from './dto/login.dto'
 import { UserAuth } from 'types'
 import { UserPayload } from './interfaces/user-payload'
+import { toObjectId } from '@/common/transformer.mongo-id'
 
 @Injectable()
 export class AuthService {
@@ -95,7 +96,7 @@ export class AuthService {
     const checkPassword = await compare(password, user.password)
     if (!checkPassword) throw new UnauthorizedException('Incorrect password, try again')
 
-    const payload = await this.createUserPayload(userName)
+    const payload = await this.createUserPayload(user._id.toString())
 
     return {
       user: payload,
@@ -114,7 +115,7 @@ export class AuthService {
   }
 
   async refreshToken(user: UserAuth) {
-    const payload = await this.createUserPayload(user.userName)
+    const payload = await this.createUserPayload(user._id.toString())
 
     return {
       accessToken: await this.jwtAuthService.signAsync(payload, {
@@ -129,9 +130,9 @@ export class AuthService {
     }
   }
 
-  async createUserPayload(userNameFind: string): Promise<UserPayload> {
+  async createUserPayload(userId: string): Promise<UserPayload> {
     const user = await this.userModel
-      .findOne({ userName: userNameFind })
+      .findOne({ _id: toObjectId(userId) })
       .populate({
         path: 'currentCompany',
         select: 'name address rolesId',

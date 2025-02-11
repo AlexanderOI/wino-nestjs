@@ -41,16 +41,17 @@ export class AuthService {
 
     const existingUserByEmail = await this.userModel.findOne({ email })
 
-    if (existingUserByEmail) {
-      throw new ConflictException(`A user with email: ${email} already exists`)
-    }
-
     const existsUserByName = await this.userModel.findOne({
       userName: userName,
     })
 
-    if (existsUserByName) {
-      throw new ConflictException(`A user with username: ${userName} already exists`)
+    if (existingUserByEmail || existsUserByName) {
+      throw new ConflictException({
+        email: existingUserByEmail ? [`A user with email: ${email} already exists`] : [],
+        userName: existsUserByName
+          ? [`A user with username: ${userName} already exists`]
+          : [],
+      })
     }
 
     const user = await this.userModel.create({
@@ -128,6 +129,20 @@ export class AuthService {
       }),
       expiresIn: new Date().getTime() + 60 * 60 * 1000,
     }
+  }
+
+  async checkUserData(userName?: string, email?: string) {
+    if (userName) {
+      const user = await this.userModel.findOne({ userName })
+      if (user) throw new ConflictException('User already exists')
+    }
+
+    if (email) {
+      const userByEmail = await this.userModel.findOne({ email })
+      if (userByEmail) throw new ConflictException('Email already exists')
+    }
+
+    return { message: 'User data is valid' }
   }
 
   async createUserPayload(userId: string): Promise<UserPayload> {

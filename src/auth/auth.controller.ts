@@ -1,4 +1,4 @@
-import { Controller, Post, Body, UseGuards, Request } from '@nestjs/common'
+import { Controller, Post, Body, UseGuards, Request, Query, Get } from '@nestjs/common'
 import { AuthService } from './auth.service'
 import { RegisterAuthDto } from './dto/register.dto'
 import { LoginAuthDto } from './dto/login.dto'
@@ -25,5 +25,10 @@ export class AuthController {
   @Post('refresh')
   refresh(@Request() req: RequestWithUser) {
     return this.authService.refreshToken(req.user)
+  }
+
+  @Get('check-user-data')
+  checkUserData(@Query() userData: { userName?: string; email?: string }) {
+    return this.authService.checkUserData(userData.userName, userData.email)
   }
 }

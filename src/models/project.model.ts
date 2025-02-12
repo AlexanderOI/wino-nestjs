@@ -32,7 +32,7 @@ export class Project extends Document {
   endDate: Date
 
   @Prop({ type: Types.ObjectId, ref: 'Company' })
-  company: Company
+  companyId: Types.ObjectId
 }
 
 export const ProjectSchema = SchemaFactory.createForClass(Project)
@@ -51,7 +51,15 @@ ProjectSchema.virtual('leader', {
   justOne: true,
 })
 
+ProjectSchema.virtual('company', {
+  ref: 'Company',
+  localField: 'companyId',
+  foreignField: '_id',
+  justOne: true,
+})
+
 export interface ProjectDocument extends HydratedDocument<Project> {
   members: User[]
   leader: User
+  company: Company
 }

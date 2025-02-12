@@ -131,7 +131,7 @@ export class DataService {
     const projects = initialProjects.map((project) => ({
       ...project,
       leaderId: adminUser._id,
-      company: adminUser.currentCompanyId,
+      companyId: adminUser.currentCompanyId,
     }))
 
     const firstProject = await this.projectModel.create(projects[0])

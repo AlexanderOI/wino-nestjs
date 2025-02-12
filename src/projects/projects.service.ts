@@ -24,7 +24,7 @@ export class ProjectsService {
   async create(createProjectDto: CreateProjectDto, userAuth: UserAuth) {
     const project = await this.projectModel.create({
       ...createProjectDto,
-      company: userAuth.companyId,
+      companyId: userAuth.companyId,
     })
 
     await this.columnsService.createDefaultColumns(project._id)
@@ -35,7 +35,7 @@ export class ProjectsService {
   async findAll(userAuth: UserAuth, projectIds?: Types.ObjectId[]): Promise<any[]> {
     const projects = await this.projectModel
       .find({
-        company: userAuth.companyId,
+        companyId: userAuth.companyId,
         ...(projectIds ? { _id: { $in: projectIds } } : {}),
       })
       .select('-updatedAt -createdAt -__v')

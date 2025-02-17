@@ -18,6 +18,8 @@ import { RequestWithUser } from 'types'
 import { ParseMongoIdPipe } from '@/common/parse-mongo-id.pipe'
 import { FileInterceptor } from '@nestjs/platform-express'
 import { multerOptions } from '@/cloudinary/config/multer.config'
+import { CreateInvitedUserDto } from './dto/create-invited-user.dto'
+import { UpdateInvitedUserDto } from './dto/update-invited-user.dto'
 
 @Auth()
 @Controller('users')
@@ -68,5 +70,36 @@ export class UserController {
     @Request() req: RequestWithUser,
   ) {
     return this.userService.uploadAvatar(file, req.user)
+  }
+
+  @Post('invited-user/:userId')
+  createInvitedUser(
+    @Param('userId', ParseMongoIdPipe) userId: string,
+    @Body() createInvitedUserDto: CreateInvitedUserDto,
+    @Request() req: RequestWithUser,
+  ) {
+    return this.userService.createInvitedUser(userId, createInvitedUserDto, req.user)
+  }
+
+  @Get('invited-user/:userName')
+  findInvitedUser(@Param('userName') userName: string, @Request() req: RequestWithUser) {
+    return this.userService.findInvitedUser(userName, req.user)
+  }
+
+  @Patch('invited-user/:userId')
+  updateInvitedUser(
+    @Param('userId', ParseMongoIdPipe) userId: string,
+    @Body() updateInvitedUserDto: UpdateInvitedUserDto,
+    @Request() req: RequestWithUser,
+  ) {
+    return this.userService.updateInvitedUser(userId, updateInvitedUserDto, req.user)
+  }
+
+  @Post('invited-user/accept/:companyId')
+  acceptInvitedUser(
+    @Param('companyId', ParseMongoIdPipe) companyId: string,
+    @Request() req: RequestWithUser,
+  ) {
+    return this.userService.acceptInvitedUser(companyId, req.user)
   }
 }

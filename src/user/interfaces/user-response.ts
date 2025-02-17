@@ -9,4 +9,8 @@ export interface UserResponse {
   rolesId: string[]
   roleType: string
   isActive: boolean
+  isInvited: boolean
+  invitePending: boolean
+  createdAt: Date
+  updatedAt: Date
 }

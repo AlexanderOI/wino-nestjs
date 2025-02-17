@@ -26,6 +26,12 @@ export class UserCompany extends Document {
 
   @Prop({ default: true })
   isActive: boolean
+
+  @Prop({ default: false })
+  isInvited: boolean
+
+  @Prop({ default: false })
+  invitePending: boolean
 }
 
 export const UserCompanySchema = SchemaFactory.createForClass(UserCompany)
@@ -54,4 +60,6 @@ export interface UserCompanyDocument extends HydratedDocument<UserCompany> {
   user: User
   company: Company
   roles: Role[]
+  createdAt: Date
+  updatedAt: Date
 }

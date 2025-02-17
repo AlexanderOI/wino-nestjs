@@ -50,16 +50,18 @@ export class CompanyService {
   }
 
   async findAll(userId: string) {
+    const userCompany = await this.userCompanyModel.find({ userId }).select('companyId')
     const companies = await this.companyModel
       .find({
         $or: [
-          { owner: new Types.ObjectId(userId) },
-          { usersCompany: { $elemMatch: { userId: new Types.ObjectId(userId) } } },
+          { owner: userId },
+          { _id: { $in: userCompany.map((user) => user.companyId) } },
         ],
       })
-      .populate([{ path: 'owner', select: 'name avatar' }])
+      .populate([{ path: 'owner', select: 'name avatar' }, ,])
       .select('-updatedAt -createdAt -__v')
       .lean()
+    console.log(companies, companies.length)
 
     return companies
   }

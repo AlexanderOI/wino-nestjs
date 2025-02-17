@@ -11,6 +11,8 @@ import { UserCompany, UserCompanyDocument } from '@/models/user-company.model'
 import { toObjectId } from '@/common/transformer.mongo-id'
 import { UserResponse } from './interfaces/user-response'
 import { CloudinaryService } from '@/cloudinary/cloudinary.service'
+import { UpdateInvitedUserDto } from './dto/update-invited-user.dto'
+import { CreateInvitedUserDto } from './dto/create-invited-user.dto'
 
 @Injectable()
 export class UserService {
@@ -185,8 +187,91 @@ export class UserService {
     return { url: avatarUrl }
   }
 
+  async findInvitedUser(userName: string, userAuth: UserAuth) {
+    const invitedUser = await this.userModel
+      .findOne({
+        userName,
+      })
+      .lean()
+
+    if (!invitedUser) throw new NotFoundException('User not found')
+
+    const userCompany = await this.userCompanyModel.findOne({
+      userId: invitedUser._id,
+      companyId: userAuth.companyId,
+    })
+
+    if (userCompany) throw new BadRequestException('User already exists in your company')
+
+    const { password, ...userData } = invitedUser
+
+    return userData
+  }
+
+  async createInvitedUser(
+    userId: string,
+    createInvitedUserDto: CreateInvitedUserDto,
+    userAuth: UserAuth,
+  ) {
+    const { rolesId, roleType } = createInvitedUserDto
+
+    const user = await this.userModel.findById(userId)
+
+    if (!user) throw new NotFoundException('User not found')
+
+    const newUser = await this.userCompanyModel.create({
+      userId,
+      companyId: userAuth.companyId,
+      rolesId,
+      roleType,
+      isActive: false,
+      isInvited: true,
+      invitePending: true,
+    })
+
+    await this.companyService.addUserToCompany(newUser)
+
+    return newUser
+  }
+
+  async updateInvitedUser(
+    userId: string,
+    updateInvitedUserDto: UpdateInvitedUserDto,
+    userAuth: UserAuth,
+  ) {
+    const updatedUser = await this.userCompanyModel.findOneAndUpdate(
+      { userId, companyId: userAuth.companyId },
+      { $set: updateInvitedUserDto },
+    )
+
+    if (!updatedUser) throw new BadRequestException('User not found')
+
+    return updatedUser
+  }
+
+  async acceptInvitedUser(companyId: string, userAuth: UserAuth) {
+    const updatedUser = await this.userCompanyModel.findOneAndUpdate(
+      { userId: userAuth._id, companyId },
+      { $set: { isActive: true, invitePending: false } },
+    )
+
+    if (!updatedUser) throw new BadRequestException('User not found')
+
+    return updatedUser
+  }
+
   createUserResponse(userCompany: UserCompanyDocument): UserResponse {
-    const { user, roles, roleType, isActive, companyId } = userCompany
+    const {
+      user,
+      roles,
+      roleType,
+      isInvited,
+      isActive,
+      companyId,
+      createdAt,
+      updatedAt,
+      invitePending,
+    } = userCompany
     const { _id, name, userName, email, avatar } = user
 
     return {
@@ -199,7 +284,11 @@ export class UserService {
       rolesId: roles?.map((role) => role._id.toString()),
       roleType,
       isActive,
+      isInvited,
+      invitePending,
       company: companyId.toString(),
+      createdAt,
+      updatedAt,
     }
   }
 }

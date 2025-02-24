@@ -8,7 +8,6 @@ import { UserAuth } from 'types'
 import { CompanyService } from '@/company/company.service'
 import { hash } from 'bcrypt'
 import { UserCompany, UserCompanyDocument } from '@/models/user-company.model'
-import { toObjectId } from '@/common/transformer.mongo-id'
 import { UserResponse } from './interfaces/user-response'
 import { CloudinaryService } from '@/cloudinary/cloudinary.service'
 import { UpdateInvitedUserDto } from './dto/update-invited-user.dto'
@@ -26,11 +25,17 @@ export class UserService {
   ) {}
 
   async create(createUserDto: CreateUserDto, user: UserAuth) {
-    const { password, confirmPassword, roles, roleType, ...userData } = createUserDto
+    const { password, confirmPassword, rolesId, roleType, ...userData } = createUserDto
 
     if (password !== confirmPassword) {
       throw new BadRequestException('Passwords do not match')
     }
+
+    const userExists = await this.userModel.findOne({
+      $or: [{ email: userData.email }, { userName: userData.userName }],
+    })
+
+    if (userExists) throw new BadRequestException('Username or email already in use')
 
     const newUser = await this.userModel.create({
       ...userData,
@@ -41,7 +46,7 @@ export class UserService {
     const userCompany = await this.userCompanyModel.create({
       userId: newUser._id,
       companyId: user.companyId,
-      rolesId: toObjectId(roles),
+      rolesId,
       roleType,
     })
 
@@ -103,7 +108,7 @@ export class UserService {
   }
 
   async update(id: string, updateUserDto: UpdateUserDto, userAuth: UserAuth) {
-    const { password, confirmPassword, roles, ...userData } = updateUserDto
+    const { password, confirmPassword, ...userData } = updateUserDto
 
     if (password && confirmPassword) {
       if (password !== confirmPassword) {
@@ -119,19 +124,9 @@ export class UserService {
 
     if (!updatedUser) throw new BadRequestException('User not found')
 
-    const updateFields: any = {}
-
-    if (roles && roles.length > 0) {
-      updateFields.rolesId = toObjectId(roles)
-    }
-
-    if (userData.roleType) {
-      updateFields.roleType = userData.roleType
-    }
-
     await this.userCompanyModel.findOneAndUpdate(
       { userId: id, companyId: userAuth.companyId },
-      { $set: updateFields },
+      { $set: updateUserDto },
     )
 
     return 'User updated'
@@ -163,7 +158,7 @@ export class UserService {
   }
 
   async changeCurrentCompany(companyId: string, user: UserAuth) {
-    const company = await this.companyService.findOne(companyId)
+    const company = await this.companyService.findOne(companyId, user)
 
     const updatedUser = await this.userModel.findByIdAndUpdate(user._id, {
       $set: { currentCompanyId: company._id },

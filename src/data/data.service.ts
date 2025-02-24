@@ -11,10 +11,10 @@ import { Company, CompanyDocument } from '@/models/company.model'
 import { UserCompany, UserCompanyDocument } from '@/models/user-company.model'
 import {
   initialUsers,
-  initialRoles,
   initialCompany,
   initialTasks,
   initialProjects,
+  initialRoles,
 } from './data.seed'
 import { ActivityDocument } from '@/models/activity.model'
 import { Activity } from '@/models/activity.model'

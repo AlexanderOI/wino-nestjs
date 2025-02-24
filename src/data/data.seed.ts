@@ -1,8 +1,8 @@
 import { CreateUserDto } from '@/user/dto/create-user.dto'
 import { CreateCompanyDto } from '@/company/dto/create-company.dto'
-import { CreateRoleDto } from '@/roles/dto/create-role.dto'
 import { PERMISSIONS } from '@/permissions/constants/permissions'
 import { CreateProjectDto } from '@/projects/dto/create-project.dto'
+import { CreateRoleDto } from '@/roles/dto/create-role.dto'
 
 export const initialCompany: CreateCompanyDto = {
   name: 'Empresa Inicial',
@@ -29,7 +29,7 @@ export const initialUsers: CreateUserDto[] = [
     userName: 'admin',
     password: '1234',
     confirmPassword: '1234',
-    roles: [],
+    rolesId: [],
     roleType: 'admin',
   },
   {
@@ -38,7 +38,7 @@ export const initialUsers: CreateUserDto[] = [
     userName: 'usuario',
     password: '1234',
     confirmPassword: '1234',
-    roles: [],
+    rolesId: [],
     roleType: 'user',
   },
   {
@@ -47,7 +47,7 @@ export const initialUsers: CreateUserDto[] = [
     userName: 'juanperez',
     password: '1234',
     confirmPassword: '1234',
-    roles: [],
+    rolesId: [],
     roleType: 'user',
   },
   {
@@ -56,7 +56,7 @@ export const initialUsers: CreateUserDto[] = [
     userName: 'mariagonzalez',
     password: '1234',
     confirmPassword: '1234',
-    roles: [],
+    rolesId: [],
     roleType: 'user',
   },
   {
@@ -65,7 +65,7 @@ export const initialUsers: CreateUserDto[] = [
     userName: 'carloslopez',
     password: '1234',
     confirmPassword: '1234',
-    roles: [],
+    rolesId: [],
     roleType: 'user',
   },
   {
@@ -74,7 +74,7 @@ export const initialUsers: CreateUserDto[] = [
     userName: 'anamartinez',
     password: '1234',
     confirmPassword: '1234',
-    roles: [],
+    rolesId: [],
     roleType: 'user',
   },
   {
@@ -83,7 +83,7 @@ export const initialUsers: CreateUserDto[] = [
     userName: 'luisfernandez',
     password: '1234',
     confirmPassword: '1234',
-    roles: [],
+    rolesId: [],
     roleType: 'user',
   },
   {
@@ -92,7 +92,7 @@ export const initialUsers: CreateUserDto[] = [
     userName: 'sofiaramirez',
     password: '1234',
     confirmPassword: '1234',
-    roles: [],
+    rolesId: [],
     roleType: 'user',
   },
   {
@@ -101,7 +101,7 @@ export const initialUsers: CreateUserDto[] = [
     userName: 'diegoalvarez',
     password: '1234',
     confirmPassword: '1234',
-    roles: [],
+    rolesId: [],
     roleType: 'user',
   },
   {
@@ -110,7 +110,7 @@ export const initialUsers: CreateUserDto[] = [
     userName: 'lauratorres',
     password: '1234',
     confirmPassword: '1234',
-    roles: [],
+    rolesId: [],
     roleType: 'user',
   },
   {
@@ -119,7 +119,7 @@ export const initialUsers: CreateUserDto[] = [
     userName: 'ricardoherrera',
     password: '1234',
     confirmPassword: '1234',
-    roles: [],
+    rolesId: [],
     roleType: 'user',
   },
   {
@@ -128,7 +128,7 @@ export const initialUsers: CreateUserDto[] = [
     userName: 'valentinaruiz',
     password: '1234',
     confirmPassword: '1234',
-    roles: [],
+    rolesId: [],
     roleType: 'user',
   },
   {
@@ -137,7 +137,7 @@ export const initialUsers: CreateUserDto[] = [
     userName: 'fernandovega',
     password: '1234',
     confirmPassword: '1234',
-    roles: [],
+    rolesId: [],
     roleType: 'user',
   },
   {
@@ -146,7 +146,7 @@ export const initialUsers: CreateUserDto[] = [
     userName: 'isabelmorales',
     password: '1234',
     confirmPassword: '1234',
-    roles: [],
+    rolesId: [],
     roleType: 'user',
   },
   {
@@ -155,7 +155,7 @@ export const initialUsers: CreateUserDto[] = [
     userName: 'gabrielsoto',
     password: '1234',
     confirmPassword: '1234',
-    roles: [],
+    rolesId: [],
     roleType: 'user',
   },
   {
@@ -164,7 +164,7 @@ export const initialUsers: CreateUserDto[] = [
     userName: 'camiladiaz',
     password: '1234',
     confirmPassword: '1234',
-    roles: [],
+    rolesId: [],
     roleType: 'user',
   },
   {
@@ -173,7 +173,7 @@ export const initialUsers: CreateUserDto[] = [
     userName: 'pedrosanchez',
     password: '1234',
     confirmPassword: '1234',
-    roles: [],
+    rolesId: [],
     roleType: 'user',
   },
   {
@@ -182,7 +182,7 @@ export const initialUsers: CreateUserDto[] = [
     userName: 'luciamendoza',
     password: '1234',
     confirmPassword: '1234',
-    roles: [],
+    rolesId: [],
     roleType: 'user',
   },
 ]
@@ -234,13 +234,14 @@ export const initialProjects = [
 
 export const initialTasks = [
   {
-    name: 'Agregar los roles que faltan',
-    description: 'Agregar los roles que faltan para que el usuario pueda ver los roles',
+    name: 'Agregar los rolesId que faltan',
+    description:
+      'Agregar los rolesId que faltan para que el usuario pueda ver los rolesId',
     column: 0,
   },
   {
-    name: 'Mejorar la vista de roles',
-    description: 'Mejorar la vista de roles para que el usuario pueda ver los roles',
+    name: 'Mejorar la vista de rolesId',
+    description: 'Mejorar la vista de rolesId para que el usuario pueda ver los rolesId',
     column: 0,
   },
 

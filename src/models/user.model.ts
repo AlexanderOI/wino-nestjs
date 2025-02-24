@@ -1,7 +1,6 @@
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose'
 import { Document, HydratedDocument, Types } from 'mongoose'
-import { Company, CompanyDocument } from '@/models/company.model'
-import { UserCompany } from '@/models/user-company.model'
+import { CompanyDocument } from '@/models/company.model'
 
 @Schema({ timestamps: true, toJSON: { virtuals: true }, toObject: { virtuals: true } })
 export class User extends Document {

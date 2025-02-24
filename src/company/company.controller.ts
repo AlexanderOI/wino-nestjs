@@ -31,8 +31,8 @@ export class CompanyController {
   }
 
   @Get(':id')
-  findOne(@Param('id', ParseMongoIdPipe) id: string) {
-    return this.companyService.findOne(id)
+  findOne(@Param('id', ParseMongoIdPipe) id: string, @Request() req: RequestWithUser) {
+    return this.companyService.findOne(id, req.user)
   }
 
   @Patch(':id')
@@ -45,7 +45,7 @@ export class CompanyController {
   }
 
   @Delete(':id')
-  remove(@Param('id', ParseMongoIdPipe) id: string) {
-    return this.companyService.remove(id)
+  remove(@Param('id', ParseMongoIdPipe) id: string, @Request() req: RequestWithUser) {
+    return this.companyService.remove(id, req.user)
   }
 }

@@ -41,16 +41,17 @@ export class AuthService {
 
     const existingUserByEmail = await this.userModel.findOne({ email })
 
-    const existsUserByName = await this.userModel.findOne({
-      userName: userName,
-    })
-
-    if (existingUserByEmail || existsUserByName) {
+    if (existingUserByEmail) {
       throw new ConflictException({
-        email: existingUserByEmail ? [`A user with email: ${email} already exists`] : [],
-        userName: existsUserByName
-          ? [`A user with username: ${userName} already exists`]
-          : [],
+        email: [`A user with email: ${email} already exists`],
+      })
+    }
+
+    const existsUserByName = await this.userModel.findOne({ userName: userName })
+
+    if (existsUserByName) {
+      throw new ConflictException({
+        userName: [`A user with username: ${userName} already exists`],
       })
     }
 
@@ -146,29 +147,23 @@ export class AuthService {
   }
 
   async createUserPayload(userId: string): Promise<UserPayload> {
-    const user = await this.userModel
-      .findOne({ _id: toObjectId(userId) })
-      .populate({
-        path: 'currentCompany',
-        select: 'name address rolesId',
-      })
-      .lean()
+    const user = await this.userModel.findOne({ _id: toObjectId(userId) }).populate({
+      path: 'currentCompany',
+      select: 'name address rolesId',
+    })
 
-    const userCompany = await this.userCompanyModel
-      .findOne({
-        userId: user._id,
-        companyId: user.currentCompany._id,
+    let userCompany = await this.getUserCompany(user._id, user.currentCompany._id)
+
+    if (!userCompany.isActive) {
+      let companyOwner = await this.companyModel.findOne({
+        owner: user._id,
+        isMain: true,
       })
-      .populate({
-        path: 'roles',
-        select: 'name permissions',
-        populate: {
-          path: 'permissions',
-          model: 'Permission',
-          select: 'name',
-        },
-      })
-      .lean()
+
+      await user.updateOne({ currentCompanyId: companyOwner._id })
+
+      userCompany = await this.getUserCompany(user._id, companyOwner._id)
+    }
 
     const permissions = userCompany.roles.flatMap((role) =>
       role.permissions?.map((permission) => permission.name),
@@ -192,5 +187,22 @@ export class AuthService {
     }
 
     return userDataPayload
+  }
+
+  async getUserCompany(userId: unknown, companyId: unknown) {
+    const userCompany = await this.userCompanyModel
+      .findOne({ userId, companyId })
+      .populate({
+        path: 'roles',
+        select: 'name permissions',
+        populate: {
+          path: 'permissions',
+          model: 'Permission',
+          select: 'name',
+        },
+      })
+      .lean()
+
+    return userCompany
   }
 }

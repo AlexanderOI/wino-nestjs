@@ -3,7 +3,7 @@ import { CreateCompanyDto } from './dto/create-company.dto'
 import { UpdateCompanyDto } from './dto/update-company.dto'
 import { Company, CompanyDocument } from '../models/company.model'
 import { InjectModel } from '@nestjs/mongoose'
-import { Model, Types } from 'mongoose'
+import { Model } from 'mongoose'
 import { UserAuth } from 'types'
 import { Role } from '@/models/role.model'
 import { Permission } from '@/models/permission.model'
@@ -49,8 +49,10 @@ export class CompanyService {
     return company
   }
 
-  async findAll(userId: string) {
-    const userCompany = await this.userCompanyModel.find({ userId }).select('companyId')
+  async findAll(userId: string): Promise<Company[]> {
+    const userCompany = await this.userCompanyModel
+      .find({ userId })
+      .select('companyId isActive')
     const companies = await this.companyModel
       .find({
         $or: [
@@ -58,18 +60,25 @@ export class CompanyService {
           { _id: { $in: userCompany.map((user) => user.companyId) } },
         ],
       })
-      .populate([{ path: 'owner', select: 'name avatar' }, ,])
+      .populate([{ path: 'owner', select: 'name avatar' }])
       .select('-updatedAt -createdAt -__v')
       .lean()
-    console.log(companies, companies.length)
 
-    return companies
+    return companies.map((company) => ({
+      ...company,
+      isActive: userCompany.find(
+        (user) => user.companyId.toString() === company._id.toString(),
+      )?.isActive,
+    }))
   }
 
-  async findOne(id: string): Promise<Company> {
+  async findOne(id: string, user: UserAuth): Promise<Company> {
     const company = await this.companyModel
       .findById(id)
-      .populate([{ path: 'owner', select: 'name avatar' }])
+      .populate([
+        { path: 'owner', select: 'name avatar' },
+        { path: 'usersCompany', match: { userId: user._id } },
+      ])
       .select('-updatedAt -createdAt -__v')
       .lean()
 
@@ -83,15 +92,21 @@ export class CompanyService {
     updateCompanyDto: UpdateCompanyDto,
     user: UserAuth,
   ): Promise<Company> {
-    const updatedCompany = await this.companyModel.findByIdAndUpdate(id, updateCompanyDto)
+    const company = await this.companyModel.findById(id)
 
-    if (!updatedCompany) throw new BadRequestException('Company not found')
+    if (!company) throw new BadRequestException('Company not found')
+
+    this.checkCompanyOwner(company, user)
+
+    const updatedCompany = await this.companyModel.findByIdAndUpdate(id, updateCompanyDto)
 
     return updatedCompany
   }
 
-  async remove(id: string): Promise<Company> {
-    const company = await this.findOne(id)
+  async remove(id: string, user: UserAuth): Promise<Company> {
+    const company = await this.findOne(id, user)
+
+    this.checkCompanyOwner(company, user)
 
     const deletedCompany = await company.deleteOne()
 
@@ -112,5 +127,11 @@ export class CompanyService {
     })
 
     return company
+  }
+
+  checkCompanyOwner(company: Company, user: UserAuth) {
+    if (company.owner.toString() !== user._id.toString()) {
+      throw new BadRequestException('You are not the owner of this company')
+    }
   }
 }

@@ -55,7 +55,6 @@ export class TasksController {
 
   @Get(':id')
   findOne(@Param('id', ParseMongoIdPipe) id: string, @Request() req: RequestWithUser) {
-    console.log(id)
     return this.tasksService.findOne(id, req.user)
   }
 

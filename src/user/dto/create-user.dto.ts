@@ -1,4 +1,4 @@
-import { IsArray, IsEmail, IsNotEmpty } from 'class-validator'
+import { IsArray, IsEmail, IsNotEmpty, MinLength } from 'class-validator'
 import { Transform } from 'class-transformer'
 import { toObjectId } from '@/common/transformer.mongo-id'
 
@@ -24,10 +24,12 @@ export class CreateUserDto {
 
   @IsString()
   // @Matches(/^(?=.*\d)(?=.*[a-z])(?=.*[A-Z])(?=.*[a-zA-Z]).{8,}$/)
+  @MinLength(4)
   password: string
 
   @IsString()
   // @Matches(/^(?=.*\d)(?=.*[a-z])(?=.*[A-Z])(?=.*[a-zA-Z]).{8,}$/)
+  @MinLength(4)
   confirmPassword: string
 
   @IsNotEmpty()

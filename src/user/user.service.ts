@@ -250,7 +250,18 @@ export class UserService {
       { $set: { isActive: true, invitePending: false } },
     )
 
-    if (!updatedUser) throw new BadRequestException('User not found')
+    if (!updatedUser) throw new BadRequestException('Invited user not found')
+
+    return updatedUser
+  }
+
+  async deleteInvitedUser(userId: string, userAuth: UserAuth) {
+    const updatedUser = await this.userCompanyModel.findOneAndDelete({
+      userId,
+      companyId: userAuth.companyId,
+    })
+
+    if (!updatedUser) throw new BadRequestException('Invited user not found')
 
     return updatedUser
   }

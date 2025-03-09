@@ -102,4 +102,12 @@ export class UserController {
   ) {
     return this.userService.acceptInvitedUser(companyId, req.user)
   }
+
+  @Delete('invited-user/:userId')
+  deleteInvitedUser(
+    @Param('userId', ParseMongoIdPipe) userId: string,
+    @Request() req: RequestWithUser,
+  ) {
+    return this.userService.deleteInvitedUser(userId, req.user)
+  }
 }

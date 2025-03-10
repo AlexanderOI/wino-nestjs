@@ -18,7 +18,7 @@ import { AuthGuardJwt } from './auth/guard/auth.guard'
 @Module({
   imports: [
     ConfigModule.forRoot({ isGlobal: true }),
-    MongooseModule.forRoot('mongodb://localhost:27017/wino-db'),
+    MongooseModule.forRoot(process.env.MONGO_URI),
     AuthModule,
     RolesModule,
     PermissionModule,

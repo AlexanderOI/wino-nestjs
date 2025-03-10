@@ -29,16 +29,6 @@ import { AuthGuardJwt } from './auth/guard/auth.guard'
     TasksModule,
   ],
   controllers: [AppController],
-  providers: [
-    AppService,
-    {
-      provide: APP_GUARD,
-      useClass: AuthGuardJwt,
-    },
-    {
-      provide: APP_GUARD,
-      useClass: PermissionsGuard,
-    },
-  ],
+  providers: [AppService],
 })
 export class AppModule {}

@@ -3,10 +3,11 @@ import { PermissionsService } from './permissions.service'
 import { PermissionsController } from './permissions.controller'
 import { MongooseModule } from '@nestjs/mongoose'
 import { Permission, PermissionSchema } from '../models/permission.model'
+import { JwtService } from '@nestjs/jwt'
 
 @Module({
   controllers: [PermissionsController],
-  providers: [PermissionsService],
+  providers: [PermissionsService, JwtService],
   imports: [
     MongooseModule.forFeature([
       {

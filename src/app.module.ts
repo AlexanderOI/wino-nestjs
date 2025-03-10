@@ -12,7 +12,8 @@ import { DataModule } from './data/data.module'
 import { ConfigModule } from '@nestjs/config'
 import { UserModule } from './user/user.module'
 import { ProjectsModule } from './projects/projects.module'
-import { TasksModule } from './tasks/tasks.module';
+import { TasksModule } from './tasks/tasks.module'
+import { AuthGuardJwt } from './auth/guard/auth.guard'
 
 @Module({
   imports: [
@@ -30,6 +31,10 @@ import { TasksModule } from './tasks/tasks.module';
   controllers: [AppController],
   providers: [
     AppService,
+    {
+      provide: APP_GUARD,
+      useClass: AuthGuardJwt,
+    },
     {
       provide: APP_GUARD,
       useClass: PermissionsGuard,

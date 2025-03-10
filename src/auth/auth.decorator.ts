@@ -5,7 +5,8 @@ import { AuthGuardJwt } from './guard/auth.guard'
 
 export function Auth(...permissions: string[]) {
   return applyDecorators(
+    UseGuards(AuthGuardJwt),
+    UseGuards(PermissionsGuard),
     Permissions(permissions),
-    UseGuards(AuthGuardJwt, PermissionsGuard),
   )
 }

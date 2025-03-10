@@ -31,13 +31,11 @@ export class CompanyService {
       permissions: permissions.map((permission) => permission._id),
     })
 
-    console.log(role)
     const company = await this.companyModel.create({
       ...createCompanyDto,
       owner: user._id,
       rolesId: [role._id],
     })
-    console.log(company)
 
     const userCompany = await this.userCompanyModel.create({
       userId: user._id,

@@ -21,5 +21,6 @@ import { UserCompany, UserCompanySchema } from '@/models/user-company.model'
       { name: UserCompany.name, schema: UserCompanySchema },
     ]),
   ],
+  exports: [JwtService],
 })
 export class AuthModule {}

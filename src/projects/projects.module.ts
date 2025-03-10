@@ -9,7 +9,7 @@ import { UserSchema } from '@/models/user.model'
 import { JwtService } from '@nestjs/jwt'
 import { ColumnsModule } from '@/columns-task/columns.module'
 import { UserModule } from '@/user/user.module'
-
+import { UserCompany, UserCompanySchema } from '@/models/user-company.model'
 @Module({
   controllers: [ProjectsController],
   providers: [ProjectsService, JwtService],
@@ -17,6 +17,7 @@ import { UserModule } from '@/user/user.module'
     MongooseModule.forFeature([
       { name: Project.name, schema: ProjectSchema },
       { name: User.name, schema: UserSchema },
+      { name: UserCompany.name, schema: UserCompanySchema },
     ]),
     ColumnsModule,
     UserModule,

@@ -31,11 +31,13 @@ export class CompanyService {
       permissions: permissions.map((permission) => permission._id),
     })
 
+    console.log(role)
     const company = await this.companyModel.create({
       ...createCompanyDto,
       owner: user._id,
-      roles: [role._id],
+      rolesId: [role._id],
     })
+    console.log(company)
 
     const userCompany = await this.userCompanyModel.create({
       userId: user._id,
@@ -52,7 +54,8 @@ export class CompanyService {
   async findAll(userId: string): Promise<Company[]> {
     const userCompany = await this.userCompanyModel
       .find({ userId })
-      .select('companyId isActive')
+      .select('companyId isActive roleType isInvited invitePending')
+
     const companies = await this.companyModel
       .find({
         $or: [
@@ -61,15 +64,22 @@ export class CompanyService {
         ],
       })
       .populate([{ path: 'owner', select: 'name avatar' }])
-      .select('-updatedAt -createdAt -__v')
+      .select('-updatedAt -__v')
       .lean()
 
-    return companies.map((company) => ({
-      ...company,
-      isActive: userCompany.find(
+    return companies.map((company) => {
+      const user = userCompany.find(
         (user) => user.companyId.toString() === company._id.toString(),
-      )?.isActive,
-    }))
+      )
+
+      return {
+        ...company,
+        isActive: user?.isActive,
+        roleType: user?.roleType,
+        isInvited: user?.isInvited,
+        invitePending: user?.invitePending,
+      }
+    })
   }
 
   async findOne(id: string, user: UserAuth): Promise<Company> {
@@ -103,14 +113,16 @@ export class CompanyService {
     return updatedCompany
   }
 
-  async remove(id: string, user: UserAuth): Promise<Company> {
-    const company = await this.findOne(id, user)
+  async remove(id: string, user: UserAuth) {
+    const company = await this.companyModel.findById(id)
+
+    if (!company) throw new BadRequestException('Company not found')
 
     this.checkCompanyOwner(company, user)
 
-    const deletedCompany = await company.deleteOne()
+    await company.deleteOne()
 
-    return deletedCompany
+    return 'Company deleted successfully'
   }
 
   async addUserToCompany(userCompany: UserCompany) {

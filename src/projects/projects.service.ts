@@ -9,7 +9,7 @@ import { InjectModel } from '@nestjs/mongoose'
 import { AddProjectUsersDto } from './dto/add-project.dto'
 import { ColumnsService } from '../columns-task/columns.service'
 import { UserService } from '@/user/user.service'
-
+import { UserCompany, UserCompanyDocument } from '@/models/user-company.model'
 @Injectable()
 export class ProjectsService {
   constructor(
@@ -17,6 +17,8 @@ export class ProjectsService {
     private readonly projectModel: Model<ProjectDocument>,
     @InjectModel(User.name)
     private readonly userModel: Model<User>,
+    @InjectModel(UserCompany.name)
+    private readonly userCompanyModel: Model<UserCompanyDocument>,
     private readonly columnsService: ColumnsService,
     private readonly userService: UserService,
   ) {}
@@ -97,11 +99,7 @@ export class ProjectsService {
     return project
   }
 
-  async setProjectUsers(
-    id: string,
-    addProjectUsersDto: AddProjectUsersDto,
-    userAuth: UserAuth,
-  ) {
+  async setProjectUsers(id: string, addProjectUsersDto: AddProjectUsersDto) {
     const project = await this.projectModel.findById(id)
 
     if (!project) throw new NotFoundException('Project not found')
@@ -115,5 +113,23 @@ export class ProjectsService {
     await project.updateOne({ membersId: users.map((user) => user._id) })
 
     return project.membersId
+  }
+
+  async getProjectsByCompanyId(companyId: string, userAuth: UserAuth) {
+    const userCompany = await this.userCompanyModel.findOne({
+      userId: userAuth._id,
+      companyId,
+    })
+
+    if (!userCompany)
+      throw new NotFoundException('The user is not a member of this company')
+
+    const projects = await this.projectModel.find({
+      companyId,
+    })
+
+    if (!projects) throw new NotFoundException('Projects not found')
+
+    return projects
   }
 }

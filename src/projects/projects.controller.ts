@@ -59,8 +59,15 @@ export class ProjectsController {
   setProjectUsers(
     @Param('id', ParseMongoIdPipe) id: string,
     @Body() addProjectUsersDto: AddProjectUsersDto,
+  ) {
+    return this.projectsService.setProjectUsers(id, addProjectUsersDto)
+  }
+
+  @Get('company/:companyId')
+  getProjectsByCompanyId(
+    @Param('companyId', ParseMongoIdPipe) companyId: string,
     @Request() req: RequestWithUser,
   ) {
-    return this.projectsService.setProjectUsers(id, addProjectUsersDto, req.user)
+    return this.projectsService.getProjectsByCompanyId(companyId, req.user)
   }
 }

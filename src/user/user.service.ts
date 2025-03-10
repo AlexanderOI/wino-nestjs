@@ -266,6 +266,33 @@ export class UserService {
     return updatedUser
   }
 
+  async leaveCompany(companyId: string, userAuth: UserAuth) {
+    const updatedUser = await this.userCompanyModel.findOneAndDelete({
+      userId: userAuth._id,
+      companyId,
+      isActive: true,
+      isInvited: true,
+      invitePending: false,
+    })
+
+    if (!updatedUser) throw new BadRequestException('User not found')
+
+    return updatedUser
+  }
+
+  async rejectInvitedUser(companyId: string, userAuth: UserAuth) {
+    const updatedUser = await this.userCompanyModel.findOneAndDelete({
+      userId: userAuth._id,
+      companyId,
+      isInvited: true,
+      invitePending: true,
+    })
+
+    if (!updatedUser) throw new BadRequestException('Invited user not found')
+
+    return updatedUser
+  }
+
   createUserResponse(userCompany: UserCompanyDocument): UserResponse {
     const {
       user,

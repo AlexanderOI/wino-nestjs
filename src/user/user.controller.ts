@@ -103,6 +103,22 @@ export class UserController {
     return this.userService.acceptInvitedUser(companyId, req.user)
   }
 
+  @Post('invited-user/reject/:companyId')
+  rejectInvitedUser(
+    @Param('companyId', ParseMongoIdPipe) companyId: string,
+    @Request() req: RequestWithUser,
+  ) {
+    return this.userService.rejectInvitedUser(companyId, req.user)
+  }
+
+  @Post('invited-user/leave/:companyId')
+  leaveCompany(
+    @Param('companyId', ParseMongoIdPipe) companyId: string,
+    @Request() req: RequestWithUser,
+  ) {
+    return this.userService.leaveCompany(companyId, req.user)
+  }
+
   @Delete('invited-user/:userId')
   deleteInvitedUser(
     @Param('userId', ParseMongoIdPipe) userId: string,

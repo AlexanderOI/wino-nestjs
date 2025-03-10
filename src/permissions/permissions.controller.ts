@@ -1,33 +1,22 @@
-import {
-  Controller,
-  Get,
-  Post,
-  Body,
-  Patch,
-  Param,
-  Delete,
-  Query,
-  Request,
-  UseGuards,
-} from '@nestjs/common'
+import { Controller, Get, Query, Request } from '@nestjs/common'
 import { PermissionsService } from './permissions.service'
 
 import { RequestWithUser } from 'types'
-import { PermissionsGuard } from '@/permissions/guards/permissions.guard'
 import { Auth } from '@/auth/auth.decorator'
-import { Permissions } from '@/permissions/decorators/permissions.decorator'
+import { PERMISSIONS } from '@/permissions/constants/permissions'
 
+@Auth()
 @Controller('permissions')
 export class PermissionsController {
   constructor(private readonly permissionsService: PermissionsService) {}
 
+  @Auth(PERMISSIONS.VIEW_ROLE)
   @Get()
-  // @UseGuards(AuthGuardJwt, PermissionsGuard)
-  // @Permissions(['admin'])
   findAll(@Request() req: RequestWithUser) {
     return this.permissionsService.findAll()
   }
 
+  @Auth(PERMISSIONS.VIEW_ROLE)
   @Get('search')
   search(@Query('query') query: string) {
     return this.permissionsService.search(query)

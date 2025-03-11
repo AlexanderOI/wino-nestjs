@@ -95,6 +95,10 @@ export const permissions = [
     description: 'This user can view projects',
   },
   {
+    name: PERMISSIONS.MANAGE_PROJECT,
+    description: 'This user can manage projects',
+  },
+  {
     name: PERMISSIONS.CREATE_COLUMN,
     description: 'This user can create columns',
   },

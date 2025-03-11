@@ -1,73 +1,108 @@
-<p align="center">
-  <a href="http://nestjs.com/" target="blank"><img src="https://nestjs.com/img/logo-small.svg" width="200" alt="Nest Logo" /></a>
-</p>
+# Wino NestJS API - Project And Task Management
 
-[circleci-image]: https://img.shields.io/circleci/build/github/nestjs/nest/master?token=abc123def456
-[circleci-url]: https://circleci.com/gh/nestjs/nest
+A robust REST API built with NestJS that provides a complete backend architecture for project and task management. Features include JWT authentication, image handling with Cloudinary, and MongoDB database integration.
 
-  <p align="center">A progressive <a href="http://nodejs.org" target="_blank">Node.js</a> framework for building efficient and scalable server-side applications.</p>
-    <p align="center">
-<a href="https://www.npmjs.com/~nestjscore" target="_blank"><img src="https://img.shields.io/npm/v/@nestjs/core.svg" alt="NPM Version" /></a>
-<a href="https://www.npmjs.com/~nestjscore" target="_blank"><img src="https://img.shields.io/npm/l/@nestjs/core.svg" alt="Package License" /></a>
-<a href="https://www.npmjs.com/~nestjscore" target="_blank"><img src="https://img.shields.io/npm/dm/@nestjs/common.svg" alt="NPM Downloads" /></a>
-<a href="https://circleci.com/gh/nestjs/nest" target="_blank"><img src="https://img.shields.io/circleci/build/github/nestjs/nest/master" alt="CircleCI" /></a>
-<a href="https://coveralls.io/github/nestjs/nest?branch=master" target="_blank"><img src="https://coveralls.io/repos/github/nestjs/nest/badge.svg?branch=master#9" alt="Coverage" /></a>
-<a href="https://discord.gg/G7Qnnhy" target="_blank"><img src="https://img.shields.io/badge/discord-online-brightgreen.svg" alt="Discord"/></a>
-<a href="https://opencollective.com/nest#backer" target="_blank"><img src="https://opencollective.com/nest/backers/badge.svg" alt="Backers on Open Collective" /></a>
-<a href="https://opencollective.com/nest#sponsor" target="_blank"><img src="https://opencollective.com/nest/sponsors/badge.svg" alt="Sponsors on Open Collective" /></a>
-  <a href="https://paypal.me/kamilmysliwiec" target="_blank"><img src="https://img.shields.io/badge/Donate-PayPal-ff3f59.svg"/></a>
-    <a href="https://opencollective.com/nest#sponsor"  target="_blank"><img src="https://img.shields.io/badge/Support%20us-Open%20Collective-41B883.svg" alt="Support us"></a>
-  <a href="https://twitter.com/nestframework" target="_blank"><img src="https://img.shields.io/twitter/follow/nestframework.svg?style=social&label=Follow"></a>
-</p>
-  <!--[![Backers on Open Collective](https://opencollective.com/nest/backers/badge.svg)](https://opencollective.com/nest#backer)
-  [![Sponsors on Open Collective](https://opencollective.com/nest/sponsors/badge.svg)](https://opencollective.com/nest#sponsor)-->
+## Key Features
 
-## Description
+- Project Management
 
-[Nest](https://github.com/nestjs/nest) framework TypeScript starter repository.
+  - Create and manage multiple projects
+  - Assign team members to projects
+  - Track project progress and status
+  - Dashboard with project statistics
 
-## Installation
+- Task Management
 
-```bash
-$ npm install
-```
+  - Create, update, and delete tasks
+  - Assign tasks to team members
+  - Track task status and completion
+  - Columns for task status
 
-## Running the app
+- User Management
+  - User authentication with JWT
+  - Role-based access control
+  - Team collaboration features
+  - User profiles with avatars (Cloudinary integration)
 
-```bash
-# development
-$ npm run start
+## Main Technologies
 
-# watch mode
-$ npm run start:dev
+- NestJS
+- MongoDB
+- Docker
+- Cloudinary (for image storage)
+- JWT for authentication
+- Swagger for API documentation
 
-# production mode
-$ npm run start:prod
-```
+## Prerequisites
 
-## Test
+- Node.js (v18 or higher)
+- pnpm
+- Docker and Docker Compose
+- MongoDB (local or via Docker)
+
+## Project Setup
+
+1. Clone the repository:
 
 ```bash
-# unit tests
-$ npm run test
-
-# e2e tests
-$ npm run test:e2e
-
-# test coverage
-$ npm run test:cov
+git clone https://github.com/AlexanderOI/wino-nextjs
+cd wino-nestjs
 ```
 
-## Support
+2. Install dependencies:
 
-Nest is an MIT-licensed open source project. It can grow thanks to the sponsors and support by the amazing backers. If you'd like to join them, please [read more here](https://docs.nestjs.com/support).
+```bash
+pnpm install
+```
 
-## Stay in touch
+3. Configure environment variables:
 
-- Author - [Kamil Myśliwiec](https://kamilmysliwiec.com)
-- Website - [https://nestjs.com](https://nestjs.com/)
-- Twitter - [@nestframework](https://twitter.com/nestframework)
+```bash
+cp .env.example .env
+```
 
-## License
+4. Complete the environment variables in the `.env` file:
 
-Nest is [MIT licensed](LICENSE).
+- `JWT_SECRET_ACCESS`: Secret key for JWT access tokens
+- `JWT_SECRET_REFRESH`: Secret key for JWT refresh tokens
+- `CLOUDINARY_CLOUD_NAME`: Your Cloudinary cloud name
+- `CLOUDINARY_API_KEY`: Cloudinary API Key
+- `CLOUDINARY_API_SECRET`: Cloudinary API Secret
+- `MONGO_URI`: MongoDB connection URI (default: mongodb://localhost:27017/wino-db)
+
+## Starting the Project
+
+1. Start the database with Docker:
+
+```bash
+docker-compose up -d
+```
+
+2. Start the development server:
+
+```bash
+pnpm start:dev
+```
+
+The server will be available at `http://localhost:8000`
+
+## Available Scripts
+
+- `pnpm start:dev`: Starts the server in development mode with hot-reload
+- `pnpm build`: Builds the project
+- `pnpm start:prod`: Starts the server in production mode
+- `pnpm format`: Formats the code
+
+## API Documentation
+
+API documentation is available at the `/api` route once the server is running.
+
+## Features
+
+- JWT Authentication
+- Protected Routes
+- Roles and Permissions
+- File handling with Cloudinary
+- Data validation with class-validator
+- Automatic documentation with Swagger
+- Code formatting with Prettier

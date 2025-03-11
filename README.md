@@ -2,29 +2,17 @@
 
 A robust REST API built with NestJS that provides a complete backend architecture for project and task management. Features include JWT authentication, image handling with Cloudinary, and MongoDB database integration.
 
-## Key Features
+## 🚀 Features
 
-- Project Management
+- JWT Authentication
+- Protected Routes
+- Roles and Permissions
+- File handling with Cloudinary
+- Data validation with class-validator
+- Automatic documentation with Swagger
+- Code formatting with Prettier
 
-  - Create and manage multiple projects
-  - Assign team members to projects
-  - Track project progress and status
-  - Dashboard with project statistics
-
-- Task Management
-
-  - Create, update, and delete tasks
-  - Assign tasks to team members
-  - Track task status and completion
-  - Columns for task status
-
-- User Management
-  - User authentication with JWT
-  - Role-based access control
-  - Team collaboration features
-  - User profiles with avatars (Cloudinary integration)
-
-## Main Technologies
+## 🛠️ Main Technologies
 
 - NestJS
 - MongoDB
@@ -33,19 +21,12 @@ A robust REST API built with NestJS that provides a complete backend architectur
 - JWT for authentication
 - Swagger for API documentation
 
-## Prerequisites
-
-- Node.js (v18 or higher)
-- pnpm
-- Docker and Docker Compose
-- MongoDB (local or via Docker)
-
-## Project Setup
+## 📦 Installation
 
 1. Clone the repository:
 
 ```bash
-git clone https://github.com/AlexanderOI/wino-nextjs
+git clone https://github.com/AlexanderOI/wino-nestjs.git
 cd wino-nestjs
 ```
 
@@ -70,7 +51,11 @@ cp .env.example .env
 - `CLOUDINARY_API_SECRET`: Cloudinary API Secret
 - `MONGO_URI`: MongoDB connection URI (default: mongodb://localhost:27017/wino-db)
 
-## Starting the Project
+API documentation is available at the `/api` route once the server is running.
+
+The frontend can be found in the [wino-nextjs](https://github.com/AlexanderOI/wino-nextjs) repository
+
+## 🚀 Local Development
 
 1. Start the database with Docker:
 
@@ -86,23 +71,19 @@ pnpm start:dev
 
 The server will be available at `http://localhost:8000`
 
-## Available Scripts
+## 🏗️ Production Build
+
+```bash
+pnpm build
+```
+
+```bash
+pnpm start:prod
+```
+
+## 📦 📝 Available Scripts
 
 - `pnpm start:dev`: Starts the server in development mode with hot-reload
 - `pnpm build`: Builds the project
 - `pnpm start:prod`: Starts the server in production mode
 - `pnpm format`: Formats the code
-
-## API Documentation
-
-API documentation is available at the `/api` route once the server is running.
-
-## Features
-
-- JWT Authentication
-- Protected Routes
-- Roles and Permissions
-- File handling with Cloudinary
-- Data validation with class-validator
-- Automatic documentation with Swagger
-- Code formatting with Prettier

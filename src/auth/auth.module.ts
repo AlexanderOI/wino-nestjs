@@ -1,13 +1,14 @@
+import { JwtService } from '@nestjs/jwt'
 import { Module } from '@nestjs/common'
-import { AuthService } from './auth.service'
-import { AuthController } from './auth.controller'
 import { MongooseModule } from '@nestjs/mongoose'
+import { AuthController } from '@/auth/auth.controller'
+import { AuthService } from '@/auth/auth.service'
 import { User, UserSchema } from '@/models/user.model'
 import { Company, CompanySchema } from '@/models/company.model'
 import { Role, RoleSchema } from '@/models/role.model'
-import { JwtService } from '@nestjs/jwt'
 import { Permission, PermissionSchema } from '@/models/permission.model'
 import { UserCompany, UserCompanySchema } from '@/models/user-company.model'
+import { DataModule } from '@/data/data.module'
 
 @Module({
   controllers: [AuthController],
@@ -20,6 +21,7 @@ import { UserCompany, UserCompanySchema } from '@/models/user-company.model'
       { name: Permission.name, schema: PermissionSchema },
       { name: UserCompany.name, schema: UserCompanySchema },
     ]),
+    DataModule,
   ],
   exports: [JwtService],
 })

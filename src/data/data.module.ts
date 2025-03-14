@@ -16,7 +16,6 @@ import { ColumnsModule } from '@/columns-task/columns.module'
 @Module({
   controllers: [DataController],
   providers: [DataService],
-
   imports: [
     MongooseModule.forFeature([
       { name: User.name, schema: UserSchema },
@@ -31,5 +30,6 @@ import { ColumnsModule } from '@/columns-task/columns.module'
     ]),
     ColumnsModule,
   ],
+  exports: [DataService],
 })
 export class DataModule {}

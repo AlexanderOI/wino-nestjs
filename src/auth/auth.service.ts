@@ -21,6 +21,7 @@ import { LoginAuthDto } from './dto/login.dto'
 import { UserAuth } from 'types'
 import { UserPayload } from './interfaces/user-payload'
 import { toObjectId } from '@/common/transformer.mongo-id'
+import { DataService } from '@/data/data.service'
 
 @Injectable()
 export class AuthService {
@@ -32,6 +33,7 @@ export class AuthService {
     @InjectModel(Permission.name) private readonly permissioModel: Model<Permission>,
     @InjectModel(UserCompany.name)
     private readonly userCompanyModel: Model<UserCompanyDocument>,
+    private readonly dataService: DataService,
   ) {}
 
   async register(userRegister: RegisterAuthDto) {
@@ -84,6 +86,9 @@ export class AuthService {
 
     await company.updateOne({ usersCompany: [userCompany._id] })
     await user.updateOne({ currentCompanyId: company._id })
+    if (process.env.ENV === 'demo') {
+      await this.dataService.createDemoData(user._id)
+    }
 
     return { message: 'User registered successfully' }
   }

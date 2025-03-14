@@ -61,6 +61,14 @@ export class DataService {
     return { message: 'Datos iniciales creados exitosamente' }
   }
 
+  async createDemoData(userId: unknown) {
+    const user = await this.userModel.findById(userId)
+    const company = await this.companyModel.findOne({ isMain: true, owner: userId })
+    const roles = await this.roleModel.find({ _id: { $in: company.rolesId } })
+    await this.insertUsers(company, roles, user)
+    await this.insertProjects(user)
+  }
+
   private async insertPermissions() {
     const createdPermissions = await this.permissionModel.insertMany(permissions)
     return createdPermissions
@@ -88,29 +96,38 @@ export class DataService {
     return roles
   }
 
-  private async insertUsers(company: Company, roles: Role[]) {
-    let adminUser: UserDocument | null = null
+  private async insertUsers(company: Company, roles: Role[], user?: UserDocument) {
+    let adminUser: UserDocument | null = user || null
 
-    await this.companyModel.findByIdAndUpdate(company._id, {
-      rolesId: roles.map((role) => role._id),
-    })
+    if (!user) {
+      await this.companyModel.findByIdAndUpdate(company._id, {
+        rolesId: roles.map((role) => role._id),
+      })
+    }
 
     for (const userData of initialUsers) {
       const hashedPassword = await hash(userData.password, 10)
-      const role = roles[userData.roleType === 'admin' ? 0 : 1]
+      const role = user ? roles[0] : roles[userData.roleType === 'admin' ? 0 : 1]
 
-      const user = await this.userModel.create({
+      const { userName, email } = userData
+
+      const newUser = await this.userModel.create({
         ...userData,
-        password: hashedPassword,
+        userName: userName + company.name,
+        email: email.split('@')[0] + '@' + company.name + '.com',
+        password: user ? user.password : hashedPassword,
         currentCompanyId: company._id,
       })
 
-      if (userData.roleType === 'admin') {
-        adminUser = user
+      let owner = user?._id || company.owner
+
+      if (userData.roleType === 'admin' && !user) {
+        adminUser = newUser
+        owner = newUser._id
       }
 
       const userCompany = await this.userCompanyModel.create({
-        userId: user._id,
+        userId: newUser._id,
         companyId: company._id,
         rolesId: [role._id],
         roleType: userData.roleType,
@@ -120,7 +137,7 @@ export class DataService {
         $push: {
           usersCompany: userCompany._id,
         },
-        owner: userData.roleType === 'admin' ? user._id : company.owner,
+        owner,
       })
     }
 

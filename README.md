@@ -69,6 +69,20 @@ docker-compose up -d
 pnpm start:dev
 ```
 
+3. Init data in the database with the following route:
+
+```bash
+http://localhost:8000/api/v1/data/create
+```
+
+Main user credentials:
+
+> Email: admin@sistema.com
+> UserName: admin
+> Password: 1234
+
+All users passwords are 1234
+
 The server will be available at `http://localhost:8000`
 
 ## 🏗️ Production Build

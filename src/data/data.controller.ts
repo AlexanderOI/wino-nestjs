@@ -11,6 +11,6 @@ export class DataController {
       return this.dataService.create()
     }
 
-    return { message: 'No se puede crear datos en producción' }
+    return { message: 'This route is only available in development mode' }
   }
 }

@@ -1,19 +1,19 @@
 import { Module } from '@nestjs/common'
-import { AppController } from './app.controller'
-import { AppService } from './app.service'
-import { AuthModule } from './auth/auth.module'
-import { RolesModule } from './roles/roles.module'
-import { APP_GUARD } from '@nestjs/core'
-import { PermissionsGuard } from '@/permissions/guards/permissions.guard'
-import { PermissionModule } from './permissions/permissions.module'
-import { MongooseModule } from '@nestjs/mongoose'
-import { CompanyModule } from './company/company.module'
-import { DataModule } from './data/data.module'
 import { ConfigModule } from '@nestjs/config'
-import { UserModule } from './user/user.module'
-import { ProjectsModule } from './projects/projects.module'
-import { TasksModule } from './tasks/tasks.module'
-import { AuthGuardJwt } from './auth/guard/auth.guard'
+import { MongooseModule } from '@nestjs/mongoose'
+
+import { AppController } from '@/app.controller'
+import { AppService } from '@/app.service'
+
+import { AuthModule } from '@/auth/auth.module'
+import { DataModule } from '@/data/data.module'
+import { UserModule } from '@/user/user.module'
+import { TasksModule } from '@/tasks/tasks.module'
+import { RolesModule } from '@/roles/roles.module'
+import { CompanyModule } from '@/company/company.module'
+import { ProjectsModule } from '@/projects/projects.module'
+import { FormsTaskModule } from '@/forms-task/forms-task.module'
+import { PermissionModule } from '@/permissions/permissions.module'
 
 @Module({
   imports: [
@@ -27,6 +27,7 @@ import { AuthGuardJwt } from './auth/guard/auth.guard'
     UserModule,
     ProjectsModule,
     TasksModule,
+    FormsTaskModule,
   ],
   controllers: [AppController],
   providers: [AppService],

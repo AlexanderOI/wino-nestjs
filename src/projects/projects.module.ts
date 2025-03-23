@@ -1,15 +1,18 @@
 import { Module } from '@nestjs/common'
-import { ProjectsService } from './projects.service'
-import { ProjectsController } from './projects.controller'
-import { ProjectSchema } from '@/models/project.model'
-import { MongooseModule } from '@nestjs/mongoose'
-import { Project } from '@/models/project.model'
-import { User } from '@/models/user.model'
-import { UserSchema } from '@/models/user.model'
 import { JwtService } from '@nestjs/jwt'
+import { MongooseModule } from '@nestjs/mongoose'
+
+import { Project, ProjectSchema } from '@/models/project.model'
+import { User, UserSchema } from '@/models/user.model'
+import { UserCompany, UserCompanySchema } from '@/models/user-company.model'
+
+import { FormsTaskModule } from '@/forms-task/forms-task.module'
 import { ColumnsModule } from '@/columns-task/columns.module'
 import { UserModule } from '@/user/user.module'
-import { UserCompany, UserCompanySchema } from '@/models/user-company.model'
+
+import { ProjectsService } from '@/projects/projects.service'
+import { ProjectsController } from '@/projects/projects.controller'
+
 @Module({
   controllers: [ProjectsController],
   providers: [ProjectsService, JwtService],
@@ -21,6 +24,7 @@ import { UserCompany, UserCompanySchema } from '@/models/user-company.model'
     ]),
     ColumnsModule,
     UserModule,
+    FormsTaskModule,
   ],
   exports: [ProjectsService],
 })

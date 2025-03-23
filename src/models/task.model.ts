@@ -1,9 +1,10 @@
 import { SchemaFactory } from '@nestjs/mongoose'
 import { Prop, Schema } from '@nestjs/mongoose'
 import { Document, HydratedDocument, Types } from 'mongoose'
-import { User } from './user.model'
-import { ColumnTask } from './column-task.model'
-import { Project } from './project.model'
+
+import { User } from '@/models/user.model'
+import { Project } from '@/models/project.model'
+import { ColumnTask } from '@/models/column-task.model'
 
 @Schema({ timestamps: true, toJSON: { virtuals: true }, toObject: { virtuals: true } })
 export class Task extends Document {

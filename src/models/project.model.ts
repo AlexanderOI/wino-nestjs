@@ -1,9 +1,9 @@
-import { SchemaFactory } from '@nestjs/mongoose'
-import { Prop, Schema } from '@nestjs/mongoose'
+import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose'
 import { Document, HydratedDocument, Types } from 'mongoose'
-import { Company } from './company.model'
-import { User } from './user.model'
-import { Task } from './task.model'
+
+import { User } from '@/models/user.model'
+import { Company } from '@/models/company.model'
+import { FormTask } from '@/models/form-task.model'
 
 @Schema({ timestamps: true, toJSON: { virtuals: true }, toObject: { virtuals: true } })
 export class Project extends Document {
@@ -24,6 +24,9 @@ export class Project extends Document {
 
   @Prop()
   status: string
+
+  @Prop({ type: Types.ObjectId, ref: 'FormTask' })
+  formTaskId: Types.ObjectId
 
   @Prop()
   startDate: Date
@@ -51,6 +54,13 @@ ProjectSchema.virtual('leader', {
   justOne: true,
 })
 
+ProjectSchema.virtual('formTask', {
+  ref: 'FormTask',
+  localField: 'formTaskId',
+  foreignField: '_id',
+  justOne: true,
+})
+
 ProjectSchema.virtual('company', {
   ref: 'Company',
   localField: 'companyId',
@@ -62,4 +72,5 @@ export interface ProjectDocument extends HydratedDocument<Project> {
   members: User[]
   leader: User
   company: Company
+  formTask: FormTask
 }

@@ -111,9 +111,12 @@ export class DataService {
 
       const { userName, email } = userData
 
+      const newUserName =
+        userData.roleType === 'admin' ? userName : userName + company.name
+
       const newUser = await this.userModel.create({
         ...userData,
-        userName: userName + company.name,
+        userName: newUserName,
         email: email.split('@')[0] + '@' + company.name + '.com',
         password: user ? user.password : hashedPassword,
         currentCompanyId: company._id,

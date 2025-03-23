@@ -1,15 +1,21 @@
 import { Injectable, NotFoundException } from '@nestjs/common'
-import { CreateProjectDto } from './dto/create-project.dto'
-import { UpdateProjectDto } from './dto/update-project.dto'
-import { UserAuth } from 'types'
-import { Model, Types } from 'mongoose'
-import { Project, ProjectDocument } from '@/models/project.model'
-import { User } from '@/models/user.model'
 import { InjectModel } from '@nestjs/mongoose'
-import { AddProjectUsersDto } from './dto/add-project.dto'
-import { ColumnsService } from '../columns-task/columns.service'
-import { UserService } from '@/user/user.service'
+import { Model, Types } from 'mongoose'
+
+import { UserAuth } from 'types'
+
+import { User } from '@/models/user.model'
+import { Project, ProjectDocument } from '@/models/project.model'
 import { UserCompany, UserCompanyDocument } from '@/models/user-company.model'
+
+import { CreateProjectDto } from '@/projects/dto/create-project.dto'
+import { UpdateProjectDto } from '@/projects/dto/update-project.dto'
+import { AddProjectUsersDto } from '@/projects/dto/add-project.dto'
+
+import { ColumnsService } from '@/columns-task/columns.service'
+import { UserService } from '@/user/user.service'
+import { FormsTaskService } from '@/forms-task/forms-task.service'
+
 @Injectable()
 export class ProjectsService {
   constructor(
@@ -21,6 +27,7 @@ export class ProjectsService {
     private readonly userCompanyModel: Model<UserCompanyDocument>,
     private readonly columnsService: ColumnsService,
     private readonly userService: UserService,
+    private readonly formTaskService: FormsTaskService,
   ) {}
 
   async create(createProjectDto: CreateProjectDto, userAuth: UserAuth) {
@@ -131,5 +138,21 @@ export class ProjectsService {
     if (!projects) throw new NotFoundException('Projects not found')
 
     return projects
+  }
+
+  async assignFormTaskToProject(
+    projectId: string,
+    formTaskId: string,
+    userAuth: UserAuth,
+  ) {
+    const project = await this.projectModel.findById(projectId)
+
+    if (!project) throw new NotFoundException('Project not found')
+
+    const formTask = await this.formTaskService.findOne(formTaskId, userAuth)
+
+    await project.updateOne({ formTaskId: formTask._id })
+
+    return { message: 'FormTask assigned to project successfully' }
   }
 }

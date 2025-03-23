@@ -6,18 +6,22 @@ import {
   Patch,
   Param,
   Delete,
-  Request,
   Put,
   Query,
 } from '@nestjs/common'
-import { ProjectsService } from './projects.service'
-import { CreateProjectDto } from './dto/create-project.dto'
-import { UpdateProjectDto } from './dto/update-project.dto'
+
+import { UserAuth } from 'types'
+
 import { Auth } from '@/auth/auth.decorator'
-import { RequestWithUser } from 'types'
+import { User } from '@/auth/decorators/user.decorator'
+
 import { ParseMongoIdPipe } from '@/common/parse-mongo-id.pipe'
-import { AddProjectUsersDto } from './dto/add-project.dto'
 import { PERMISSIONS } from '@/permissions/constants/permissions'
+
+import { CreateProjectDto } from '@/projects/dto/create-project.dto'
+import { AddProjectUsersDto } from '@/projects/dto/add-project.dto'
+import { UpdateProjectDto } from '@/projects/dto/update-project.dto'
+import { ProjectsService } from '@/projects/projects.service'
 
 @Auth()
 @Controller('projects')
@@ -26,14 +30,14 @@ export class ProjectsController {
 
   @Auth(PERMISSIONS.CREATE_PROJECT)
   @Post()
-  create(@Body() createProjectDto: CreateProjectDto, @Request() req: RequestWithUser) {
-    return this.projectsService.create(createProjectDto, req.user)
+  create(@Body() createProjectDto: CreateProjectDto, @User() user: UserAuth) {
+    return this.projectsService.create(createProjectDto, user)
   }
 
   @Auth(PERMISSIONS.VIEW_PROJECT)
   @Get()
-  findAll(@Request() req: RequestWithUser) {
-    return this.projectsService.findAll(req.user)
+  findAll(@User() user: UserAuth) {
+    return this.projectsService.findAll(user)
   }
 
   @Auth(PERMISSIONS.VIEW_PROJECT)
@@ -41,9 +45,9 @@ export class ProjectsController {
   findOne(
     @Param('id', ParseMongoIdPipe) id: string,
     @Query('withMembers') withMembers: boolean = false,
-    @Request() req: RequestWithUser,
+    @User() user: UserAuth,
   ) {
-    return this.projectsService.findOne(id, req.user, withMembers)
+    return this.projectsService.findOne(id, user, withMembers)
   }
 
   @Auth(PERMISSIONS.EDIT_PROJECT)
@@ -74,8 +78,18 @@ export class ProjectsController {
   @Get('company/:companyId')
   getProjectsByCompanyId(
     @Param('companyId', ParseMongoIdPipe) companyId: string,
-    @Request() req: RequestWithUser,
+    @User() user: UserAuth,
   ) {
-    return this.projectsService.getProjectsByCompanyId(companyId, req.user)
+    return this.projectsService.getProjectsByCompanyId(companyId, user)
+  }
+
+  @Auth(PERMISSIONS.EDIT_PROJECT)
+  @Patch(':id/assign-form-task')
+  assignFormTaskToProject(
+    @Param('id', ParseMongoIdPipe) id: string,
+    @Body('formTaskId', ParseMongoIdPipe) formTaskId: string,
+    @User() user: UserAuth,
+  ) {
+    return this.projectsService.assignFormTaskToProject(id, formTaskId, user)
   }
 }

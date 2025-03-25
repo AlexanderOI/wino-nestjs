@@ -27,7 +27,6 @@ export class ProjectsService {
     private readonly userCompanyModel: Model<UserCompanyDocument>,
     private readonly columnsService: ColumnsService,
     private readonly userService: UserService,
-    private readonly formTaskService: FormsTaskService,
   ) {}
 
   async create(createProjectDto: CreateProjectDto, userAuth: UserAuth) {
@@ -138,21 +137,5 @@ export class ProjectsService {
     if (!projects) throw new NotFoundException('Projects not found')
 
     return projects
-  }
-
-  async assignFormTaskToProject(
-    projectId: string,
-    formTaskId: string,
-    userAuth: UserAuth,
-  ) {
-    const project = await this.projectModel.findById(projectId)
-
-    if (!project) throw new NotFoundException('Project not found')
-
-    const formTask = await this.formTaskService.findOne(formTaskId, userAuth)
-
-    await project.updateOne({ formTaskId: formTask._id })
-
-    return { message: 'FormTask assigned to project successfully' }
   }
 }

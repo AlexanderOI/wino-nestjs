@@ -52,4 +52,13 @@ export class FormsTaskController {
   remove(@Param('id', ParseMongoIdPipe) id: string, @User() user: UserAuth) {
     return this.formsTaskService.remove(id, user)
   }
+
+  @Patch(':id/assign-form-task')
+  assignFormTaskToProject(
+    @Param('id', ParseMongoIdPipe) id: string,
+    @Body('projectId', ParseMongoIdPipe) projectId: string,
+    @User() user: UserAuth,
+  ) {
+    return this.formsTaskService.assignFormTaskToProject(id, projectId, user)
+  }
 }

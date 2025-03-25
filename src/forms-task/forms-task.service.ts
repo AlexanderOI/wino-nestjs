@@ -41,12 +41,12 @@ export class FormsTaskService {
         formTaskId: { $in: formTasks.map((formTask) => formTask._id) },
         companyId: user.companyId,
       })
-      .select('name')
+      .select('name formTaskId')
       .lean()
 
     const formTasksWithProjectName = formTasks.map((formTask) => {
-      const project = projects.find((project) =>
-        project.formTaskId.equals(formTask._id as Types.ObjectId),
+      const project = projects.find(
+        (project) => project.formTaskId.toString() === formTask._id.toString(),
       )
       return { ...formTask, projectName: project?.name ?? '' }
     })
@@ -54,8 +54,7 @@ export class FormsTaskService {
     return formTasksWithProjectName
   }
 
-  async findOne(id: string, user: UserAuth, fields: boolean = true) {
-    console.log(id, fields)
+  async findOne(id: string | Types.ObjectId, user: UserAuth, fields: boolean = true) {
     let select = fields ? '-__v' : '-__v -fields'
     const formTask = await this.formTaskModel
       .findOne({ _id: id, companyId: user.companyId })
@@ -106,5 +105,32 @@ export class FormsTaskService {
     if (!formTask) throw new NotFoundException('FormTask not found')
 
     return { message: 'FormTask deleted successfully' }
+  }
+
+  async assignFormTaskToProject(
+    formTaskId: string,
+    projectId: string,
+    userAuth: UserAuth,
+  ) {
+    const formTask = await this.findOne(formTaskId, userAuth)
+
+    if (formTask.hasProject) throw new NotFoundException('FormTask already has a project')
+
+    const project = await this.projectModel.findOne({
+      _id: projectId,
+      companyId: userAuth.companyId,
+    })
+
+    if (!project) throw new NotFoundException('Project not found')
+
+    if (project.formTaskId) {
+      const formTask = await this.findOne(project.formTaskId, userAuth)
+      await formTask.updateOne({ hasProject: false })
+    }
+
+    await project.updateOne({ formTaskId: formTask._id })
+    await formTask.updateOne({ hasProject: true })
+
+    return { message: 'FormTask assigned to project successfully' }
   }
 }

@@ -51,6 +51,9 @@ export class FormTask extends Document {
 
   @Prop({ type: [FieldSchema], required: true })
   fields: Field[]
+
+  @Prop({ required: true, default: false })
+  hasProject: boolean
 }
 
 export const FormTaskSchema = SchemaFactory.createForClass(FormTask)

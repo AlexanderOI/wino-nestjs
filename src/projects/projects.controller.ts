@@ -82,14 +82,4 @@ export class ProjectsController {
   ) {
     return this.projectsService.getProjectsByCompanyId(companyId, user)
   }
-
-  @Auth(PERMISSIONS.EDIT_PROJECT)
-  @Patch(':id/assign-form-task')
-  assignFormTaskToProject(
-    @Param('id', ParseMongoIdPipe) id: string,
-    @Body('formTaskId', ParseMongoIdPipe) formTaskId: string,
-    @User() user: UserAuth,
-  ) {
-    return this.projectsService.assignFormTaskToProject(id, formTaskId, user)
-  }
 }

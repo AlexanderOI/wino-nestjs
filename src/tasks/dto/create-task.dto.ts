@@ -28,14 +28,4 @@ export class CreateTaskDto {
   @IsNotEmpty()
   @Transform(({ value }) => toObjectId(value))
   projectId: ObjectId
-
-  @IsDate()
-  @IsOptional()
-  @Transform(({ value }) => new Date(value))
-  startDate: Date
-
-  @IsDate()
-  @IsOptional()
-  @Transform(({ value }) => new Date(value))
-  endDate: Date
 }

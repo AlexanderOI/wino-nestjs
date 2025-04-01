@@ -6,6 +6,17 @@ import { User } from '@/models/user.model'
 import { Project } from '@/models/project.model'
 import { ColumnTask } from '@/models/column-task.model'
 
+@Schema({ timestamps: true })
+export class Field {
+  @Prop({ required: true, type: Types.ObjectId })
+  idField: Types.ObjectId
+
+  @Prop({ required: true })
+  value: string
+}
+
+const FieldSchema = SchemaFactory.createForClass(Field)
+
 @Schema({ timestamps: true, toJSON: { virtuals: true }, toObject: { virtuals: true } })
 export class Task extends Document {
   @Prop()
@@ -29,11 +40,8 @@ export class Task extends Document {
   @Prop({ type: Types.ObjectId, ref: 'Company' })
   companyId: Types.ObjectId
 
-  @Prop({ type: Date })
-  startDate: Date
-
-  @Prop({ type: Date })
-  endDate: Date
+  @Prop({ type: [FieldSchema] })
+  fields: Field[]
 }
 
 export const TaskSchema = SchemaFactory.createForClass(Task)

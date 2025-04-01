@@ -36,16 +36,6 @@ export class FilterTaskDto {
   @IsDate()
   @IsOptional()
   @Transform(({ value }) => new Date(value))
-  startDate: Date
-
-  @IsDate()
-  @IsOptional()
-  @Transform(({ value }) => new Date(value))
-  endDate: Date
-
-  @IsDate()
-  @IsOptional()
-  @Transform(({ value }) => new Date(value))
   fromUpdatedAt: Date
 
   @IsDate()

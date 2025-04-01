@@ -1,18 +1,25 @@
 import { Injectable, NotFoundException } from '@nestjs/common'
-import { CreateTaskDto } from './dto/create-task.dto'
-import { UpdateTaskDto } from './dto/update-task.dto'
 import { InjectModel } from '@nestjs/mongoose'
-import { Task } from '@/models/task.model'
-import { Model, Types } from 'mongoose'
-import { toObjectId } from '@/common/transformer.mongo-id'
-import { PaginationDto } from '@/common/dto/pagination.dto'
-import { ProjectsService } from '@/projects/projects.service'
+import { Model } from 'mongoose'
+
 import { UserAuth } from 'types'
-import { UserService } from '@/user/user.service'
-import { Activity, ActivityDocument } from '@/models/activity.model'
-import { ColumnsService } from '@/columns-task/columns.service'
+
 import { format } from 'date-fns'
-import { FilterTaskDto } from './dto/filter-task.dto'
+import { toObjectId } from '@/common/transformer.mongo-id'
+
+import { Task } from '@/models/task.model'
+import { Activity, ActivityDocument } from '@/models/activity.model'
+
+import { ColumnsService } from '@/columns-task/columns.service'
+import { ProjectsService } from '@/projects/projects.service'
+import { UserService } from '@/user/user.service'
+
+import { PaginationDto } from '@/common/dto/pagination.dto'
+import { CreateTaskDto } from '@/tasks/dto/create-task.dto'
+import { UpdateTaskDto } from '@/tasks/dto/update-task.dto'
+import { FilterTaskDto } from '@/tasks/dto/filter-task.dto'
+import { CreateFieldDto } from '@/tasks/dto/create-field.dto'
+import { UpdateFieldDto } from '@/tasks/dto/update-field.dto'
 
 @Injectable()
 export class TasksService {
@@ -36,15 +43,17 @@ export class TasksService {
     return task
   }
 
-  async findAll(filterTaskDto: FilterTaskDto, userAuth: UserAuth) {
+  async findAll(
+    filterTaskDto: FilterTaskDto,
+    userAuth: UserAuth,
+    fields: boolean = false,
+  ) {
     const {
       projectId,
       columnId,
       assignedToId,
       status,
       search,
-      startDate,
-      endDate,
       fromUpdatedAt,
       toUpdatedAt,
     } = filterTaskDto
@@ -55,14 +64,15 @@ export class TasksService {
     if (assignedToId) filters['assignedToId'] = assignedToId
     if (status) filters['status'] = status
     if (search) filters['name'] = { $regex: search, $options: 'i' }
-    if (startDate) filters['startDate'] = { $gte: startDate }
-    if (endDate) filters['endDate'] = { $lte: endDate }
     if (fromUpdatedAt && toUpdatedAt)
       filters['updatedAt'] = { $gte: fromUpdatedAt, $lte: toUpdatedAt }
+
+    let select = fields ? '-__v' : '-__v -fields'
 
     const tasks = await this.taskModel
       .find({ ...filters })
       .populate([{ path: 'column' }, { path: 'assignedTo' }])
+      .select(select)
       .lean()
 
     if (!tasks) throw new NotFoundException('Tasks not found')
@@ -70,11 +80,17 @@ export class TasksService {
     return tasks
   }
 
-  async findByProject(projectId: string, paginationDto: PaginationDto) {
+  async findByProject(
+    projectId: string,
+    paginationDto: PaginationDto,
+    fields: boolean = false,
+  ) {
     const { limit = 10, offset = 0 } = paginationDto
+    let select = fields ? '-__v' : '-__v -fields'
+
     const tasks = await this.taskModel
       .find({ projectId })
-
+      .select(select)
       .populate([{ path: 'column' }, { path: 'assignedTo' }])
       .limit(limit)
       .skip(offset)
@@ -84,11 +100,17 @@ export class TasksService {
     return tasks
   }
 
-  async findOne(id: string, userAuth: UserAuth): Promise<Partial<Task>> {
+  async findOne(
+    id: string,
+    userAuth: UserAuth,
+    fields: boolean = false,
+  ): Promise<Partial<Task>> {
+    let select = fields ? '-__v' : '-__v -fields'
+
     const task = await this.taskModel
       .findById(id)
       .populate([{ path: 'column', select: '-__v' }])
-      .select('-__v')
+      .select(select)
       .lean()
 
     if (!task) throw new NotFoundException('Task not found')
@@ -123,6 +145,34 @@ export class TasksService {
     if (!task) throw new NotFoundException('Task not deleted')
 
     await this.registerActivity(task, 'deleted', userAuth)
+
+    return task
+  }
+
+  async createField(id: string, createFieldDto: CreateFieldDto, userAuth: UserAuth) {
+    console.log(createFieldDto)
+    const task = await this.taskModel.findByIdAndUpdate(
+      id,
+      { $push: { fields: createFieldDto } },
+      { new: true },
+    )
+    if (!task) throw new NotFoundException('Task not updated')
+
+    return task
+  }
+
+  async updateField(
+    id: string,
+    fieldId: string,
+    updateFieldDto: UpdateFieldDto,
+    userAuth: UserAuth,
+  ) {
+    const task = await this.taskModel.updateOne(
+      { _id: id, 'fields._id': fieldId },
+      { $set: { 'fields.$.value': updateFieldDto.value } },
+      { new: true },
+    )
+    if (!task) throw new NotFoundException('Task not updated')
 
     return task
   }
@@ -173,8 +223,8 @@ export class TasksService {
       name: '{userName} updated the name to {newValue}',
       description: '{userName} updated the description to {newValue}',
       columnId: '{userName} moved the task to {newValue}',
-      startDate: '{userName} updated the start date to {newValue}',
-      endDate: '{userName} updated the end date to {newValue}',
+      // startDate: '{userName} updated the start date to {newValue}',
+      // endDate: '{userName} updated the end date to {newValue}',
       assignedToId: '{userName} assigned the task to {newValue}',
       deleted: '{userName} deleted the task',
       created: '{userName} created the task',

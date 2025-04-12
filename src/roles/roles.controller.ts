@@ -1,21 +1,14 @@
-import {
-  Controller,
-  Get,
-  Post,
-  Body,
-  Patch,
-  Param,
-  Delete,
-  Query,
-  Request,
-} from '@nestjs/common'
-import { RolesService } from './roles.service'
-import { CreateRoleDto } from './dto/create-role.dto'
-import { UpdateRoleDto } from './dto/update-role.dto'
-import { RequestWithUser } from '@/types'
+import { Controller, Get, Post, Body, Patch, Param, Delete, Query } from '@nestjs/common'
+
+import { User } from '@/auth/decorators/user.decorator'
 import { Auth } from '@/auth/auth.decorator'
-import { ParseMongoIdPipe } from '@/common/parse-mongo-id.pipe'
 import { PERMISSIONS } from '@/permissions/constants/permissions'
+import { ParseMongoIdPipe } from '@/common/parse-mongo-id.pipe'
+import { UserAuth } from '@/types'
+
+import { RolesService } from '@/roles/roles.service'
+import { CreateRoleDto } from '@/roles/dto/create-role.dto'
+import { UpdateRoleDto } from '@/roles/dto/update-role.dto'
 
 @Controller('roles')
 @Auth()
@@ -24,14 +17,14 @@ export class RolesController {
 
   @Auth(PERMISSIONS.CREATE_ROLE)
   @Post()
-  create(@Request() req: RequestWithUser, @Body() createRoleDto: CreateRoleDto) {
-    return this.rolesService.create(createRoleDto, req.user)
+  create(@User() user: UserAuth, @Body() createRoleDto: CreateRoleDto) {
+    return this.rolesService.create(createRoleDto, user)
   }
 
   @Auth(PERMISSIONS.VIEW_ROLE)
   @Get()
-  findAll(@Request() req: RequestWithUser) {
-    return this.rolesService.findAll(req.user.companyId)
+  findAll(@User() user: UserAuth) {
+    return this.rolesService.findAll(user)
   }
 
   @Auth(PERMISSIONS.VIEW_ROLE)
@@ -51,9 +44,9 @@ export class RolesController {
   update(
     @Param('id', ParseMongoIdPipe) id: string,
     @Body() updateRoleDto: UpdateRoleDto,
-    @Request() req: RequestWithUser,
+    @User() user: UserAuth,
   ) {
-    return this.rolesService.update(id, updateRoleDto, req.user)
+    return this.rolesService.update(id, updateRoleDto, user)
   }
 
   @Auth(PERMISSIONS.DELETE_ROLE)

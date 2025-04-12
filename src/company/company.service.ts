@@ -49,15 +49,15 @@ export class CompanyService {
     return company
   }
 
-  async findAll(userId: string): Promise<Company[]> {
+  async findAll(user: UserAuth): Promise<Company[]> {
     const userCompany = await this.userCompanyModel
-      .find({ userId })
+      .find({ userId: user._id })
       .select('companyId isActive roleType isInvited invitePending')
 
     const companies = await this.companyModel
       .find({
         $or: [
-          { owner: userId },
+          { owner: user._id },
           { _id: { $in: userCompany.map((user) => user.companyId) } },
         ],
       })

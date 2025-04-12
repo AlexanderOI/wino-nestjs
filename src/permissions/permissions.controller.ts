@@ -1,7 +1,6 @@
-import { Controller, Get, Query, Request } from '@nestjs/common'
-import { PermissionsService } from './permissions.service'
+import { Controller, Get, Query } from '@nestjs/common'
+import { PermissionsService } from '@/permissions/permissions.service'
 
-import { RequestWithUser } from '@/types'
 import { Auth } from '@/auth/auth.decorator'
 import { PERMISSIONS } from '@/permissions/constants/permissions'
 
@@ -12,7 +11,7 @@ export class PermissionsController {
 
   @Auth(PERMISSIONS.VIEW_ROLE)
   @Get()
-  findAll(@Request() req: RequestWithUser) {
+  findAll() {
     return this.permissionsService.findAll()
   }
 

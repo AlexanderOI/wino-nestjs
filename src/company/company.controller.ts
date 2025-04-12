@@ -1,20 +1,13 @@
-import {
-  Controller,
-  Get,
-  Post,
-  Body,
-  Patch,
-  Param,
-  Delete,
-  Request,
-} from '@nestjs/common'
-import { CompanyService } from './company.service'
-import { CreateCompanyDto } from './dto/create-company.dto'
-import { UpdateCompanyDto } from './dto/update-company.dto'
+import { Controller, Get, Post, Body, Patch, Param, Delete } from '@nestjs/common'
+import { User } from '@/auth/decorators/user.decorator'
 import { Auth } from '@/auth/auth.decorator'
-import { RequestWithUser } from '@/types'
-import { ParseMongoIdPipe } from '@/common/parse-mongo-id.pipe'
 import { PERMISSIONS } from '@/permissions/constants/permissions'
+import { ParseMongoIdPipe } from '@/common/parse-mongo-id.pipe'
+import { UserAuth } from '@/types'
+
+import { CreateCompanyDto } from '@/company/dto/create-company.dto'
+import { UpdateCompanyDto } from '@/company/dto/update-company.dto'
+import { CompanyService } from '@/company/company.service'
 
 @Auth()
 @Controller('company')
@@ -23,20 +16,20 @@ export class CompanyController {
 
   @Auth(PERMISSIONS.CREATE_COMPANY)
   @Post()
-  create(@Body() createCompanyDto: CreateCompanyDto, @Request() req: RequestWithUser) {
-    return this.companyService.create(createCompanyDto, req.user)
+  create(@Body() createCompanyDto: CreateCompanyDto, @User() user: UserAuth) {
+    return this.companyService.create(createCompanyDto, user)
   }
 
   @Auth(PERMISSIONS.VIEW_COMPANY)
   @Get()
-  findAll(@Request() req: RequestWithUser) {
-    return this.companyService.findAll(req.user._id)
+  findAll(@User() user: UserAuth) {
+    return this.companyService.findAll(user)
   }
 
   @Auth(PERMISSIONS.VIEW_COMPANY)
   @Get(':id')
-  findOne(@Param('id', ParseMongoIdPipe) id: string, @Request() req: RequestWithUser) {
-    return this.companyService.findOne(id, req.user)
+  findOne(@Param('id', ParseMongoIdPipe) id: string, @User() user: UserAuth) {
+    return this.companyService.findOne(id, user)
   }
 
   @Auth(PERMISSIONS.EDIT_COMPANY)
@@ -44,14 +37,14 @@ export class CompanyController {
   update(
     @Param('id', ParseMongoIdPipe) id: string,
     @Body() updateCompanyDto: UpdateCompanyDto,
-    @Request() req: RequestWithUser,
+    @User() user: UserAuth,
   ) {
-    return this.companyService.update(id, updateCompanyDto, req.user)
+    return this.companyService.update(id, updateCompanyDto, user)
   }
 
   @Auth(PERMISSIONS.DELETE_COMPANY)
   @Delete(':id')
-  remove(@Param('id', ParseMongoIdPipe) id: string, @Request() req: RequestWithUser) {
-    return this.companyService.remove(id, req.user)
+  remove(@Param('id', ParseMongoIdPipe) id: string, @User() user: UserAuth) {
+    return this.companyService.remove(id, user)
   }
 }

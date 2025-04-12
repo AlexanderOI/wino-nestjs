@@ -1,17 +1,19 @@
-import { Request } from 'express'
+import { Types } from 'mongoose'
 
-export interface RequestWithUser extends Request {
-  user: UserAuth
+declare module 'fastify' {
+  interface FastifyRequest {
+    user?: UserAuth
+  }
 }
 
 export interface UserAuth {
-  _id: string
+  _id: string | Types.ObjectId
   name: string
   userName: string
   email: string
   createdAt: string
   updatedAt: string
-  companyId: string
+  companyId: string | Types.ObjectId
   companyName: string
   permissions: string[]
   exp: number

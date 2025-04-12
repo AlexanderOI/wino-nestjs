@@ -41,8 +41,8 @@ export class RolesService {
     return role
   }
 
-  async findAll(companyId: string): Promise<Role[]> {
-    const company = await this.companyModel.findById(companyId)
+  async findAll(user: UserAuth): Promise<Role[]> {
+    const company = await this.companyModel.findById(user.companyId)
 
     return await this.roleModel.find({ _id: { $in: company.rolesId } })
   }

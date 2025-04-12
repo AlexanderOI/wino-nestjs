@@ -1,10 +1,12 @@
 import { Injectable, NotFoundException } from '@nestjs/common'
 import { InjectModel } from '@nestjs/mongoose'
-import { Model } from 'mongoose'
+import { Model, Types } from 'mongoose'
 import { ColumnTask } from '@/models/column-task.model'
 import { Task } from '@/models/task.model'
 import { CreateColumnTaskDto } from './dto/create-column.dto'
 import { UpdateColumnTaskDto } from './dto/update-column.dto'
+import { UserAuth } from '@/types'
+import { toObjectId } from '@/common/transformer.mongo-id'
 
 @Injectable()
 export class ColumnsService {
@@ -13,7 +15,7 @@ export class ColumnsService {
     @InjectModel(Task.name) private taskModel: Model<Task>,
   ) {}
 
-  async createDefaultColumns(projectId: unknown) {
+  async createDefaultColumns(projectId: unknown, companyId: string | Types.ObjectId) {
     const defaultColumns = [
       { name: 'Pending', color: '#0000ff', order: 0 },
       { name: 'In Progress', color: '#ffff00', order: 1 },
@@ -26,6 +28,7 @@ export class ColumnsService {
         this.columnTaskModel.create({
           ...col,
           projectId,
+          companyId,
         }),
       ),
     )
@@ -109,5 +112,26 @@ export class ColumnsService {
     )
 
     return this.findByProject(projectId)
+  }
+
+  async getTotalTaskPerColumns(user: UserAuth, projectId?: string) {
+    const filter = {
+      companyId: user.companyId,
+    }
+    if (projectId) filter['projectId'] = toObjectId(projectId)
+
+    const columns = await this.columnTaskModel.find({ ...filter, isActive: true })
+
+    const columnsWithTasksCount = await Promise.all(
+      columns.map(async (column) => ({
+        ...column.toObject(),
+        tasksCount: await this.taskModel.countDocuments({
+          ...filter,
+          columnId: column._id,
+        }),
+      })),
+    )
+
+    return columnsWithTasksCount
   }
 }

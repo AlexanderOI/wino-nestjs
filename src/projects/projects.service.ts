@@ -2,7 +2,7 @@ import { Injectable, NotFoundException } from '@nestjs/common'
 import { InjectModel } from '@nestjs/mongoose'
 import { Model, Types } from 'mongoose'
 
-import { UserAuth } from 'types'
+import { UserAuth } from '@/types'
 
 import { User } from '@/models/user.model'
 import { Project, ProjectDocument } from '@/models/project.model'
@@ -35,7 +35,7 @@ export class ProjectsService {
       companyId: userAuth.companyId,
     })
 
-    await this.columnsService.createDefaultColumns(project._id)
+    await this.columnsService.createDefaultColumns(project._id, userAuth.companyId)
 
     return project
   }

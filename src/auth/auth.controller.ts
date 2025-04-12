@@ -4,7 +4,8 @@ import { RegisterAuthDto } from './dto/register.dto'
 import { LoginAuthDto } from './dto/login.dto'
 import { ApiTags } from '@nestjs/swagger'
 import { RefreshGuardJwt } from './guard/refresh.guard'
-import { RequestWithUser } from 'types'
+import { User } from '@/auth/decorators/user.decorator'
+import { UserAuth } from '@/types'
 
 @ApiTags('auth')
 @Controller('auth')
@@ -23,8 +24,8 @@ export class AuthController {
 
   @UseGuards(RefreshGuardJwt)
   @Post('refresh')
-  refresh(@Request() req: RequestWithUser) {
-    return this.authService.refreshToken(req.user)
+  refresh(@User() req: UserAuth) {
+    return this.authService.refreshToken(req)
   }
 
   @Get('check-user-data')

@@ -15,6 +15,8 @@ import { UpdateColumnTaskDto } from './dto/update-column.dto'
 import { ParseMongoIdPipe } from '@/common/parse-mongo-id.pipe'
 import { Auth } from '@/auth/auth.decorator'
 import { PERMISSIONS } from '@/permissions/constants/permissions'
+import { UserAuth } from '@/types'
+import { User } from '@/auth/decorators/user.decorator'
 @Controller('columns')
 @Auth()
 export class ColumnsController {
@@ -27,6 +29,12 @@ export class ColumnsController {
     @Body() createColumnDto: CreateColumnTaskDto,
   ) {
     return this.columnsService.create(projectId, createColumnDto)
+  }
+
+  @Auth(PERMISSIONS.VIEW_TASK)
+  @Get('project/total-tasks')
+  getTotalTaskPerColumns(@User() user: UserAuth, @Query('projectId') projectId?: string) {
+    return this.columnsService.getTotalTaskPerColumns(user, projectId)
   }
 
   @Auth(PERMISSIONS.VIEW_TASK)

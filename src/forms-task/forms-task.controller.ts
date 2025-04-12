@@ -4,7 +4,7 @@ import { Auth } from '@/auth/auth.decorator'
 import { User } from '@/auth/decorators/user.decorator'
 import { ParseMongoIdPipe } from '@/common/parse-mongo-id.pipe'
 
-import { UserAuth } from 'types'
+import { UserAuth } from '@/types'
 
 import { CreateFormsTaskDto } from '@/forms-task/dto/create-forms-task.dto'
 import { UpdateFormsTaskDto } from '@/forms-task/dto/update-forms-task.dto'

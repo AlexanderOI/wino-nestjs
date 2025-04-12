@@ -4,7 +4,7 @@ import { Model } from 'mongoose'
 
 import { CreateRoleDto } from './dto/create-role.dto'
 import { UpdateRoleDto } from './dto/update-role.dto'
-import { UserAuth } from 'types'
+import { UserAuth } from '@/types'
 import { Role } from '../models/role.model'
 import { toObjectId } from '@/common/transformer.mongo-id'
 import { Company, CompanyDocument } from '@/models/company.model'

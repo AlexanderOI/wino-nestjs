@@ -12,7 +12,7 @@ import { CompanyService } from './company.service'
 import { CreateCompanyDto } from './dto/create-company.dto'
 import { UpdateCompanyDto } from './dto/update-company.dto'
 import { Auth } from '@/auth/auth.decorator'
-import { RequestWithUser } from 'types'
+import { RequestWithUser } from '@/types'
 import { ParseMongoIdPipe } from '@/common/parse-mongo-id.pipe'
 import { PERMISSIONS } from '@/permissions/constants/permissions'
 

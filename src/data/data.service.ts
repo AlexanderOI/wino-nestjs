@@ -159,11 +159,14 @@ export class DataService {
 
     await Promise.all(
       otherProjects.map((project) =>
-        this.columnService.createDefaultColumns(project._id),
+        this.columnService.createDefaultColumns(project._id, adminUser.currentCompanyId),
       ),
     )
 
-    const columns = await this.columnService.createDefaultColumns(firstProject._id)
+    const columns = await this.columnService.createDefaultColumns(
+      firstProject._id,
+      adminUser.currentCompanyId,
+    )
 
     for (const taskData of initialTasks) {
       const column = columns[taskData.column]

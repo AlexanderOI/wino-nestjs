@@ -2,7 +2,7 @@ import { Injectable, NotFoundException } from '@nestjs/common'
 import { InjectModel } from '@nestjs/mongoose'
 import { Model } from 'mongoose'
 
-import { UserAuth } from 'types'
+import { UserAuth } from '@/types'
 
 import { format } from 'date-fns'
 import { toObjectId } from '@/common/transformer.mongo-id'
@@ -56,6 +56,8 @@ export class TasksService {
       search,
       fromUpdatedAt,
       toUpdatedAt,
+      offset = 0,
+      limit = 10,
     } = filterTaskDto
     const filters = {}
 
@@ -67,21 +69,30 @@ export class TasksService {
     if (fromUpdatedAt && toUpdatedAt)
       filters['updatedAt'] = { $gte: fromUpdatedAt, $lte: toUpdatedAt }
 
-    let select = fields ? '-__v' : '-__v -fields'
-
     const tasks = await this.taskModel
-      .find({ ...filters })
-      .populate([{ path: 'column' }, { path: 'assignedTo' }])
-      .select(select)
+      .find({ companyId: userAuth.companyId, ...filters })
+      .populate([
+        { path: 'column', select: 'name color' },
+        { path: 'assignedTo', select: 'name email avatar' },
+        { path: 'project', select: 'name' },
+      ])
+      .select('-__v')
+      .skip(offset)
+      .limit(limit)
       .lean()
 
-    if (!tasks) throw new NotFoundException('Tasks not found')
+    console.log(tasks.length)
 
     return tasks
   }
 
+  async getTotalTasks(userAuth: UserAuth) {
+    return this.taskModel.countDocuments({ companyId: userAuth.companyId })
+  }
+
   async findByProject(
     projectId: string,
+    userAuth: UserAuth,
     paginationDto: PaginationDto,
     fields: boolean = false,
   ) {
@@ -89,7 +100,7 @@ export class TasksService {
     let select = fields ? '-__v' : '-__v -fields'
 
     const tasks = await this.taskModel
-      .find({ projectId })
+      .find({ companyId: userAuth.companyId, projectId })
       .select(select)
       .populate([{ path: 'column' }, { path: 'assignedTo' }])
       .limit(limit)
@@ -128,7 +139,7 @@ export class TasksService {
 
   async update(id: string, updateTaskDto: UpdateTaskDto, userAuth: UserAuth) {
     const task = await this.taskModel.findByIdAndUpdate(
-      id,
+      { _id: id, companyId: userAuth.companyId },
       { ...updateTaskDto },
       { new: true },
     )

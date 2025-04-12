@@ -1,4 +1,5 @@
 import { Injectable } from '@nestjs/common'
+import { File } from '@nest-lab/fastify-multer'
 import { v2 as cloudinary, UploadApiResponse } from 'cloudinary'
 import sharp from 'sharp'
 
@@ -12,7 +13,7 @@ export class CloudinaryService {
     })
   }
 
-  async uploadAvatar(file: Express.Multer.File) {
+  async uploadAvatar(file: File) {
     const optimizedImage = await sharp(file.buffer)
       .resize(512, 512, { fit: 'cover' })
       .toFormat('webp')

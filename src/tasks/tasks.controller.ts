@@ -13,7 +13,7 @@ import {
 import { Auth } from '@/auth/auth.decorator'
 import { User } from '@/auth/decorators/user.decorator'
 import { ParseMongoIdPipe } from '@/common/parse-mongo-id.pipe'
-import { UserAuth } from 'types'
+import { UserAuth } from '@/types'
 
 import { PERMISSIONS } from '@/permissions/constants/permissions'
 import { TasksService } from '@/tasks/tasks.service'
@@ -63,8 +63,15 @@ export class TasksController {
     @Param('projectId', ParseMongoIdPipe) projectId: string,
     @Query() paginationDto: PaginationDto,
     @Query('fields') fields: boolean = false,
+    @User() user: UserAuth,
   ) {
-    return this.tasksService.findByProject(projectId, paginationDto, fields)
+    return this.tasksService.findByProject(projectId, user, paginationDto, fields)
+  }
+
+  @Auth(PERMISSIONS.VIEW_TASK)
+  @Get('total')
+  getTotalTasks(@User() user: UserAuth) {
+    return this.tasksService.getTotalTasks(user)
   }
 
   @Auth(PERMISSIONS.VIEW_TASK)

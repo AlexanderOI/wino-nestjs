@@ -10,7 +10,7 @@ import {
   Query,
 } from '@nestjs/common'
 
-import { UserAuth } from 'types'
+import { UserAuth } from '@/types'
 
 import { Auth } from '@/auth/auth.decorator'
 import { User } from '@/auth/decorators/user.decorator'

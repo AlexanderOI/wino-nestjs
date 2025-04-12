@@ -1,7 +1,7 @@
 import { Controller, Get, Query, Request } from '@nestjs/common'
 import { PermissionsService } from './permissions.service'
 
-import { RequestWithUser } from 'types'
+import { RequestWithUser } from '@/types'
 import { Auth } from '@/auth/auth.decorator'
 import { PERMISSIONS } from '@/permissions/constants/permissions'
 

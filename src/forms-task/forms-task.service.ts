@@ -8,7 +8,7 @@ import { UpdateFormsTaskDto } from '@/forms-task/dto/update-forms-task.dto'
 import { FormTask } from '@/models/form-task.model'
 import { Project } from '@/models/project.model'
 
-import { UserAuth } from 'types'
+import { UserAuth } from '@/types'
 
 @Injectable()
 export class FormsTaskService {

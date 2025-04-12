@@ -18,7 +18,7 @@ import { UserCompany, UserCompanyDocument } from '@/models/user-company.model'
 
 import { RegisterAuthDto } from './dto/register.dto'
 import { LoginAuthDto } from './dto/login.dto'
-import { UserAuth } from 'types'
+import { UserAuth } from '@/types'
 import { UserPayload } from './interfaces/user-payload'
 import { toObjectId } from '@/common/transformer.mongo-id'
 import { DataService } from '@/data/data.service'

@@ -4,7 +4,7 @@ import { UpdateUserDto } from './dto/update-user.dto'
 import { User } from '@/models/user.model'
 import { Model, Types } from 'mongoose'
 import { InjectModel } from '@nestjs/mongoose'
-import { UserAuth } from 'types'
+import { UserAuth } from '@/types'
 import { CompanyService } from '@/company/company.service'
 import { hash } from 'bcrypt'
 import { UserCompany, UserCompanyDocument } from '@/models/user-company.model'
@@ -12,7 +12,7 @@ import { UserResponse } from './interfaces/user-response'
 import { CloudinaryService } from '@/cloudinary/cloudinary.service'
 import { UpdateInvitedUserDto } from './dto/update-invited-user.dto'
 import { CreateInvitedUserDto } from './dto/create-invited-user.dto'
-
+import { File } from '@nest-lab/fastify-multer'
 @Injectable()
 export class UserService {
   constructor(
@@ -169,10 +169,7 @@ export class UserService {
     return 'Successfully changed company'
   }
 
-  async uploadAvatar(
-    file: Express.Multer.File,
-    user: UserAuth,
-  ): Promise<{ url: string }> {
+  async uploadAvatar(file: File, user: UserAuth): Promise<{ url: string }> {
     const avatarUrl = await this.cloudinaryService.uploadAvatar(file)
 
     await this.userModel.findByIdAndUpdate(user._id, {

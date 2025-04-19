@@ -1,10 +1,32 @@
 import { toObjectId } from '@/common/transformer.mongo-id'
-import { Transform } from 'class-transformer'
-import { IsDate, IsNumber, IsString, Min } from 'class-validator'
+import { Transform, Type } from 'class-transformer'
+import {
+  IsArray,
+  IsBoolean,
+  IsDate,
+  IsNotEmpty,
+  IsNumber,
+  IsString,
+  Min,
+  ValidateNested,
+} from 'class-validator'
 import { IsOptional } from 'class-validator'
 import { ObjectId } from 'mongoose'
 
+export class SortDto {
+  @IsString()
+  @IsNotEmpty()
+  id: string
+
+  @IsBoolean()
+  desc: boolean
+}
+
 export class FilterTaskDto {
+  @IsNotEmpty()
+  @Transform(({ value }) => toObjectId(value))
+  projectId: ObjectId
+
   @IsString()
   @IsOptional()
   name: string
@@ -14,20 +36,26 @@ export class FilterTaskDto {
   description: string
 
   @IsOptional()
-  @Transform(({ value }) => toObjectId(value))
-  columnId: ObjectId
+  @Transform(({ value }) => {
+    if (Array.isArray(value)) {
+      return toObjectId(value, false).filter(Boolean)
+    } else {
+      return [toObjectId(value, false)].filter(Boolean)
+    }
+  })
+  @IsArray()
+  columnsId: ObjectId[] | null
 
   @IsOptional()
-  @Transform(({ value }) => toObjectId(value))
-  projectId: ObjectId
-
-  @IsOptional()
-  @Transform(({ value }) => toObjectId(value))
-  assignedToId: ObjectId
-
-  @IsString()
-  @IsOptional()
-  status: string
+  @Transform(({ value }) => {
+    if (Array.isArray(value)) {
+      return toObjectId(value, false).filter(Boolean)
+    } else {
+      return [toObjectId(value, false)].filter(Boolean)
+    }
+  })
+  @IsArray()
+  assignedToId: ObjectId[] | null
 
   @IsString()
   @IsOptional()
@@ -42,6 +70,33 @@ export class FilterTaskDto {
   @IsOptional()
   @Transform(({ value }) => new Date(value))
   toUpdatedAt: Date
+
+  @IsDate()
+  @IsOptional()
+  @Transform(({ value }) => new Date(value))
+  fromCreatedAt: Date
+
+  @IsDate()
+  @IsOptional()
+  @Transform(({ value }) => new Date(value))
+  toCreatedAt: Date
+
+  @IsOptional()
+  @Transform(({ value }) => {
+    console.log(value)
+    try {
+      const parsed = JSON.parse(value)
+      if (Array.isArray(parsed)) {
+        return parsed.map((item) => Object.assign(new SortDto(), item))
+      }
+      return []
+    } catch {
+      return []
+    }
+  })
+  @ValidateNested({ each: true })
+  @Type(() => SortDto)
+  sort?: SortDto[]
 
   @IsNumber()
   @IsOptional()

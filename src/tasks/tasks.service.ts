@@ -1,13 +1,13 @@
 import { Injectable, NotFoundException } from '@nestjs/common'
 import { InjectModel } from '@nestjs/mongoose'
-import { Model } from 'mongoose'
+import { FilterQuery, Model } from 'mongoose'
 
 import { UserAuth } from '@/types'
 
 import { format } from 'date-fns'
 import { toObjectId } from '@/common/transformer.mongo-id'
 
-import { Task } from '@/models/task.model'
+import { Task, TaskDocument } from '@/models/task.model'
 import { Activity, ActivityDocument } from '@/models/activity.model'
 
 import { ColumnsService } from '@/columns-task/columns.service'
@@ -17,14 +17,14 @@ import { UserService } from '@/user/user.service'
 import { PaginationDto } from '@/common/dto/pagination.dto'
 import { CreateTaskDto } from '@/tasks/dto/create-task.dto'
 import { UpdateTaskDto } from '@/tasks/dto/update-task.dto'
-import { FilterTaskDto } from '@/tasks/dto/filter-task.dto'
+import { FilterTaskDto, SortDto } from '@/tasks/dto/filter-task.dto'
 import { CreateFieldDto } from '@/tasks/dto/create-field.dto'
 import { UpdateFieldDto } from '@/tasks/dto/update-field.dto'
 
 @Injectable()
 export class TasksService {
   constructor(
-    @InjectModel(Task.name) private taskModel: Model<Task>,
+    @InjectModel(Task.name) private taskModel: Model<TaskDocument>,
     @InjectModel(Activity.name) private activityModel: Model<ActivityDocument>,
     private projectsService: ProjectsService,
     private userService: UserService,
@@ -43,47 +43,149 @@ export class TasksService {
     return task
   }
 
-  async findAll(
-    filterTaskDto: FilterTaskDto,
-    userAuth: UserAuth,
-    fields: boolean = false,
-  ) {
+  async findAll(filterTaskDto: FilterTaskDto, userAuth: UserAuth) {
+    const { limit = 10, offset = 0 } = filterTaskDto
+    const { sort = { dateOnly: 1 }, ...filters } = this.buildFilters(
+      filterTaskDto,
+      userAuth,
+    )
+
+    const tasks = await this.taskModel.aggregate([
+      { $match: filters },
+      {
+        $facet: {
+          metadata: [{ $count: 'total' }],
+          data: [
+            {
+              $addFields: {
+                dateOnly: {
+                  $dateToString: {
+                    format: '%Y-%m-%d',
+                    date: '$createdAt',
+                  },
+                },
+              },
+            },
+            { $skip: offset },
+            { $limit: limit },
+            {
+              $lookup: {
+                from: 'columntasks',
+                localField: 'columnId',
+                foreignField: '_id',
+                as: 'column',
+                pipeline: [{ $project: { name: 1, color: 1 } }],
+              },
+            },
+            { $unwind: { path: '$column', preserveNullAndEmptyArrays: true } },
+            {
+              $lookup: {
+                from: 'users',
+                localField: 'assignedToId',
+                foreignField: '_id',
+                as: 'assignedTo',
+                pipeline: [{ $project: { name: 1, email: 1, avatar: 1 } }],
+              },
+            },
+            { $unwind: { path: '$assignedTo', preserveNullAndEmptyArrays: true } },
+            {
+              $lookup: {
+                from: 'projects',
+                localField: 'projectId',
+                foreignField: '_id',
+                as: 'project',
+                pipeline: [{ $project: { name: 1 } }],
+              },
+            },
+            { $unwind: { path: '$project', preserveNullAndEmptyArrays: true } },
+            { $sort: sort },
+            { $project: { __v: 0 } },
+          ],
+        },
+      },
+    ])
+
+    const total = tasks[0].metadata[0]?.total || 0
+    const data = tasks[0].data
+
+    console.log(data.length, total)
+
+    return { tasks: data, total }
+  }
+
+  private buildFilters(dto: FilterTaskDto, user: UserAuth) {
     const {
       projectId,
-      columnId,
+      columnsId,
       assignedToId,
-      status,
       search,
       fromUpdatedAt,
       toUpdatedAt,
-      offset = 0,
-      limit = 10,
-    } = filterTaskDto
-    const filters = {}
+      fromCreatedAt,
+      toCreatedAt,
+      sort,
+    } = dto
 
-    if (projectId) filters['projectId'] = projectId
-    if (columnId) filters['columnId'] = columnId
-    if (assignedToId) filters['assignedToId'] = assignedToId
-    if (status) filters['status'] = status
-    if (search) filters['name'] = { $regex: search, $options: 'i' }
-    if (fromUpdatedAt && toUpdatedAt)
-      filters['updatedAt'] = { $gte: fromUpdatedAt, $lte: toUpdatedAt }
+    const filters: FilterQuery<TaskDocument> = {
+      companyId: user.companyId,
+    }
 
-    const tasks = await this.taskModel
-      .find({ companyId: userAuth.companyId, ...filters })
-      .populate([
-        { path: 'column', select: 'name color' },
-        { path: 'assignedTo', select: 'name email avatar' },
-        { path: 'project', select: 'name' },
-      ])
-      .select('-__v')
-      .skip(offset)
-      .limit(limit)
-      .lean()
+    if (projectId) filters.projectId = projectId
+    if (columnsId?.length) filters.columnId = { $in: columnsId }
+    if (assignedToId?.length) filters.assignedToId = { $in: assignedToId }
 
-    console.log(tasks.length)
+    if (search) {
+      filters.$or = [
+        { name: { $regex: search, $options: 'i' } },
+        { description: { $regex: search, $options: 'i' } },
+      ]
+    }
 
-    return tasks
+    if (fromUpdatedAt || toUpdatedAt) {
+      filters.updatedAt = {}
+      if (fromUpdatedAt) filters.updatedAt.$gte = fromUpdatedAt
+      if (toUpdatedAt) filters.updatedAt.$lte = toUpdatedAt
+    }
+
+    if (fromCreatedAt || toCreatedAt) {
+      filters.createdAt = {}
+      if (fromCreatedAt) filters.createdAt.$gte = fromCreatedAt
+      if (toCreatedAt) filters.createdAt.$lte = toCreatedAt
+    }
+
+    if (sort?.length) {
+      filters.sort = this.buildSortObject(sort)
+    }
+
+    return filters
+  }
+
+  private buildSortObject(sort: SortDto[]) {
+    return sort.reduce(
+      (acc, item) => {
+        let isDesc = item.desc ? -1 : 1
+
+        switch (item.id) {
+          case 'createdAt':
+            acc.dateOnly = isDesc
+            break
+          case 'assignedTo':
+            acc['assignedTo.name'] = isDesc
+            break
+          case 'task':
+            acc['name'] = isDesc
+            break
+          case 'status':
+            acc['column.name'] = isDesc
+            break
+          default:
+            acc[item.id] = isDesc
+            break
+        }
+        return acc
+      },
+      {} as Record<string, number>,
+    )
   }
 
   async getTotalTasks(userAuth: UserAuth) {
@@ -161,7 +263,6 @@ export class TasksService {
   }
 
   async createField(id: string, createFieldDto: CreateFieldDto, userAuth: UserAuth) {
-    console.log(createFieldDto)
     const task = await this.taskModel.findByIdAndUpdate(
       id,
       { $push: { fields: createFieldDto } },

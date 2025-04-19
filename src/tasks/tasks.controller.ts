@@ -49,12 +49,8 @@ export class TasksController {
 
   @Auth(PERMISSIONS.VIEW_TASK)
   @Get()
-  findAll(
-    @Query() filterTaskDto: FilterTaskDto,
-    @User() user: UserAuth,
-    @Query('fields') fields: boolean = false,
-  ) {
-    return this.tasksService.findAll(filterTaskDto, user, fields)
+  findAll(@Query() filterTaskDto: FilterTaskDto, @User() user: UserAuth) {
+    return this.tasksService.findAll(filterTaskDto, user)
   }
 
   @Auth(PERMISSIONS.VIEW_TASK)

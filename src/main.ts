@@ -11,11 +11,14 @@ async function bootstrap() {
     AppModule,
     new FastifyAdapter(),
   )
+
+  const fastifyInstance = app.getHttpAdapter().getInstance()
+  await fastifyInstance.register(multipart as any)
+
   app.enableCors({
     origin: process.env.APP_URL,
+    methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH'],
   })
-
-  await app.register(multipart)
 
   const config = new DocumentBuilder()
     .addBearerAuth()
@@ -35,6 +38,7 @@ async function bootstrap() {
       transform: true,
     }),
   )
+
   await app.listen(process.env.PORT)
   console.log(`🚀 App started in ${Date.now() - start}ms`)
 }

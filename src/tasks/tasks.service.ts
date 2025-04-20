@@ -66,8 +66,6 @@ export class TasksService {
                 },
               },
             },
-            { $skip: offset },
-            { $limit: limit },
             {
               $lookup: {
                 from: 'columntasks',
@@ -99,6 +97,8 @@ export class TasksService {
             },
             { $unwind: { path: '$project', preserveNullAndEmptyArrays: true } },
             { $sort: sort },
+            { $skip: offset },
+            { $limit: limit },
             { $project: { __v: 0 } },
           ],
         },
@@ -107,8 +107,6 @@ export class TasksService {
 
     const total = tasks[0].metadata[0]?.total || 0
     const data = tasks[0].data
-
-    console.log(data.length, total)
 
     return { tasks: data, total }
   }

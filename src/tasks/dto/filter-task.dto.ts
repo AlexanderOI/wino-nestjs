@@ -83,7 +83,6 @@ export class FilterTaskDto {
 
   @IsOptional()
   @Transform(({ value }) => {
-    console.log(value)
     try {
       const parsed = JSON.parse(value)
       if (Array.isArray(parsed)) {

@@ -1,13 +1,19 @@
 import { Module } from '@nestjs/common'
-import { TasksService } from './tasks.service'
-import { TasksController } from './tasks.controller'
-import { Task, TaskSchema } from '@/models/task.model'
+
 import { JwtService } from '@nestjs/jwt'
-import { Activity, ActivitySchema } from '@/models/activity.model'
 import { MongooseModule } from '@nestjs/mongoose'
-import { ProjectsModule } from '@/projects/projects.module'
+
+import { Task, TaskSchema } from '@/models/task.model'
+import { Activity, ActivitySchema } from '@/models/activity.model'
+import { FormTask, FormTaskSchema } from '@/models/form-task.model'
+
+import { TasksService } from '@/tasks/tasks.service'
+import { TasksController } from '@/tasks/tasks.controller'
+
 import { UserModule } from '@/user/user.module'
+import { ProjectsModule } from '@/projects/projects.module'
 import { ColumnsModule } from '@/columns-task/columns.module'
+
 @Module({
   controllers: [TasksController],
   providers: [TasksService, JwtService],
@@ -15,6 +21,7 @@ import { ColumnsModule } from '@/columns-task/columns.module'
     MongooseModule.forFeature([
       { name: Task.name, schema: TaskSchema },
       { name: Activity.name, schema: ActivitySchema },
+      { name: FormTask.name, schema: FormTaskSchema },
     ]),
     ProjectsModule,
     UserModule,

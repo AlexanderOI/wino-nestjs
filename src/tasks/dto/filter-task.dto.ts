@@ -1,4 +1,4 @@
-import { toObjectId } from '@/common/transformer.mongo-id'
+import { ObjectId } from 'mongoose'
 import { Transform, Type } from 'class-transformer'
 import {
   IsArray,
@@ -6,12 +6,13 @@ import {
   IsDate,
   IsNotEmpty,
   IsNumber,
+  IsOptional,
   IsString,
   Min,
   ValidateNested,
 } from 'class-validator'
-import { IsOptional } from 'class-validator'
-import { ObjectId } from 'mongoose'
+
+import { toObjectId } from '@/common/transformer.mongo-id'
 
 export class SortDto {
   @IsString()
@@ -30,10 +31,6 @@ export class FilterTaskDto {
   @IsString()
   @IsOptional()
   name: string
-
-  @IsString()
-  @IsOptional()
-  description: string
 
   @IsOptional()
   @Transform(({ value }) => {

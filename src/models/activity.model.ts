@@ -1,10 +1,13 @@
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose'
-import { Document, HydratedDocument, Types } from 'mongoose'
-import { Task } from './task.model'
-import { User } from './user.model'
-import { Company } from './company.model'
-import { Project } from './project.model'
-import { ColumnTask } from './column-task.model'
+import { Document, HydratedDocument, Types, Schema as MongooseSchema } from 'mongoose'
+
+import { Task } from '@/models/task.model'
+import { User } from '@/models/user.model'
+import { Company } from '@/models/company.model'
+import { Project } from '@/models/project.model'
+import { ColumnTask } from '@/models/column-task.model'
+
+import { JSONContent } from '@/types/json-content.type'
 
 @Schema({ timestamps: true, toJSON: { virtuals: true }, toObject: { virtuals: true } })
 export class Activity extends Document {
@@ -23,11 +26,11 @@ export class Activity extends Document {
   @Prop({ type: String })
   text?: string
 
-  @Prop({ type: String })
-  previousValue?: string
+  @Prop({ type: MongooseSchema.Types.Mixed })
+  previousValue?: JSONContent
 
-  @Prop({ type: String })
-  newValue?: string
+  @Prop({ type: MongooseSchema.Types.Mixed })
+  newValue?: JSONContent
 
   @Prop({ required: true, type: Types.ObjectId, ref: 'User' })
   userId: Types.ObjectId

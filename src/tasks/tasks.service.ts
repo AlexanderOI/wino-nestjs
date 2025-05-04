@@ -9,15 +9,16 @@ import { toObjectId } from '@/common/transformer.mongo-id'
 
 import { Task, TaskDocument } from '@/models/task.model'
 import { Activity, ActivityDocument } from '@/models/activity.model'
+import { Field, FieldType, FormTask } from '@/models/form-task.model'
 
 import { ColumnsService } from '@/columns-task/columns.service'
 import { ProjectsService } from '@/projects/projects.service'
 import { UserService } from '@/user/user.service'
 
+import { FilterTaskDto, SortDto } from '@/tasks/dto/filter-task.dto'
 import { PaginationDto } from '@/common/dto/pagination.dto'
 import { CreateTaskDto } from '@/tasks/dto/create-task.dto'
 import { UpdateTaskDto } from '@/tasks/dto/update-task.dto'
-import { FilterTaskDto, SortDto } from '@/tasks/dto/filter-task.dto'
 import { CreateFieldDto } from '@/tasks/dto/create-field.dto'
 import { UpdateFieldDto } from '@/tasks/dto/update-field.dto'
 
@@ -26,6 +27,7 @@ export class TasksService {
   constructor(
     @InjectModel(Task.name) private taskModel: Model<TaskDocument>,
     @InjectModel(Activity.name) private activityModel: Model<ActivityDocument>,
+    @InjectModel(FormTask.name) private formTaskModel: Model<FormTask>,
     private projectsService: ProjectsService,
     private userService: UserService,
     private columnsService: ColumnsService,
@@ -133,10 +135,7 @@ export class TasksService {
     if (assignedToId?.length) filters.assignedToId = { $in: assignedToId }
 
     if (search) {
-      filters.$or = [
-        { name: { $regex: search, $options: 'i' } },
-        { description: { $regex: search, $options: 'i' } },
-      ]
+      filters.$or = [{ name: { $regex: search, $options: 'i' } }]
     }
 
     if (fromUpdatedAt || toUpdatedAt) {
@@ -277,14 +276,43 @@ export class TasksService {
     updateFieldDto: UpdateFieldDto,
     userAuth: UserAuth,
   ) {
-    const task = await this.taskModel.updateOne(
+    const task = await this.taskModel.findById(id)
+    if (!task) throw new NotFoundException('Task not found')
+
+    const previousField = task.fields.find(
+      (f) => (f as any)._id.toString() === String(fieldId),
+    )
+    if (!previousField) throw new NotFoundException('Field not found')
+
+    const formTask = await this.formTaskModel
+      .findOne({
+        companyId: userAuth.companyId,
+        'fields._id': previousField.idField,
+      })
+      .select({
+        fields: {
+          $elemMatch: { _id: previousField.idField },
+        },
+      })
+
+    if (!formTask) throw new NotFoundException('Form task not found')
+
+    const updatedTask = await this.taskModel.updateOne(
       { _id: id, 'fields._id': fieldId },
       { $set: { 'fields.$.value': updateFieldDto.value } },
       { new: true },
     )
-    if (!task) throw new NotFoundException('Task not updated')
+    if (!updatedTask) throw new NotFoundException('Task not updated')
 
-    return task
+    await this.registerActivity(
+      task,
+      formTask.fields[0].label,
+      userAuth,
+      this.formatDynamicField(previousField.value, formTask.fields[0]),
+      this.formatDynamicField(updateFieldDto.value, formTask.fields[0]),
+    )
+
+    return updatedTask
   }
 
   async reorder(taskOrders: { id: string; order: number }[]) {
@@ -295,6 +323,19 @@ export class TasksService {
     )
 
     return 'Tasks reordered'
+  }
+
+  formatDynamicField(value: string, field: Field) {
+    switch (field.type) {
+      case FieldType.Select:
+        return field.options.find((o) => (o as any)._id.toString() === value)?.value
+      case FieldType.Date:
+        return format(new Date(value), 'PPP')
+      case FieldType.DateTime:
+        return format(new Date(value), 'PPP HH:mm')
+      default:
+        return value
+    }
   }
 
   async getTaskActivity(
@@ -329,20 +370,51 @@ export class TasksService {
     previousValue?: string,
     newValue?: string,
   ) {
-    const taskKeys = {
+    const defaultMessages = {
       name: '{userName} updated the name to {newValue}',
-      description: '{userName} updated the description to {newValue}',
+      description: '{userName} updated the description',
       columnId: '{userName} moved the task to {newValue}',
-      // startDate: '{userName} updated the start date to {newValue}',
-      // endDate: '{userName} updated the end date to {newValue}',
       assignedToId: '{userName} assigned the task to {newValue}',
       deleted: '{userName} deleted the task',
       created: '{userName} created the task',
     }
 
-    let text = taskKeys[key]
+    if (key.startsWith('fields.')) {
+      const fieldId = key.split('.')[1]
+      const field = task.fields.find((f) => f.idField.toString() === fieldId)
+      if (field) {
+        const text = `{userName} updated ${fieldId} to {newValue}`
+        return await this.createActivityRecord(
+          task,
+          text,
+          userAuth,
+          previousValue,
+          newValue,
+        )
+      }
+    }
+
+    const message =
+      defaultMessages[key] || `{userName} updated field ${key} to {newValue}`
+    return await this.createActivityRecord(
+      task,
+      message,
+      userAuth,
+      previousValue,
+      newValue,
+    )
+  }
+
+  private async createActivityRecord(
+    task: Task,
+    message: string,
+    userAuth: UserAuth,
+    previousValue?: string,
+    newValue?: string,
+  ) {
+    const text = message
       .replace('{userName}', userAuth.name)
-      .replace('{newValue}', newValue)
+      .replace('{newValue}', newValue || '')
 
     const column = await this.columnsService.findOne(task.columnId.toString())
 
@@ -350,7 +422,7 @@ export class TasksService {
       taskId: task._id,
       task: task,
       column: column,
-      type: key,
+      type: 'update',
       text: text,
       previousValue,
       newValue,

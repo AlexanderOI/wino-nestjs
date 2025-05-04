@@ -1,10 +1,11 @@
 import { SchemaFactory } from '@nestjs/mongoose'
 import { Prop, Schema } from '@nestjs/mongoose'
-import { Document, HydratedDocument, Types } from 'mongoose'
+import { Document, HydratedDocument, Types, Schema as MongooseSchema } from 'mongoose'
 
 import { User } from '@/models/user.model'
 import { Project } from '@/models/project.model'
 import { ColumnTask } from '@/models/column-task.model'
+import { JSONContent } from '@/types/json-content.type'
 
 @Schema({ timestamps: true })
 export class Field {
@@ -22,8 +23,8 @@ export class Task extends Document {
   @Prop()
   name: string
 
-  @Prop()
-  description: string
+  @Prop({ type: MongooseSchema.Types.Mixed })
+  description: JSONContent
 
   @Prop({ type: Number, default: 0 })
   order: number

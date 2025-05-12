@@ -1,7 +1,6 @@
 import { toObjectId } from '@/common/transformer.mongo-id'
 import { Transform } from 'class-transformer'
 import {
-  IsArray,
   IsNotEmpty,
   IsNumber,
   IsOptional,
@@ -10,38 +9,7 @@ import {
 } from 'class-validator'
 import { Type } from 'class-transformer'
 import { ObjectId } from 'mongoose'
-
-class JSONContentMark {
-  @IsString()
-  type: string
-
-  @IsOptional()
-  attrs?: Record<string, any>
-}
-
-class JSONContentNode {
-  @IsString()
-  type: string
-
-  @IsOptional()
-  attrs?: Record<string, any>
-
-  @IsOptional()
-  @IsArray()
-  @ValidateNested({ each: true })
-  @Type(() => JSONContentNode)
-  content?: JSONContentNode[]
-
-  @IsOptional()
-  @IsArray()
-  @ValidateNested({ each: true })
-  @Type(() => JSONContentMark)
-  marks?: JSONContentMark[]
-
-  @IsOptional()
-  @IsString()
-  text?: string
-}
+import { JSONContentNode } from '@/common/json-content.dto'
 
 export class CreateTaskDto {
   @IsString()

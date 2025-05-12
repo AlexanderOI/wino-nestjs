@@ -21,6 +21,7 @@ import { CreateTaskDto } from '@/tasks/dto/create-task.dto'
 import { UpdateTaskDto } from '@/tasks/dto/update-task.dto'
 import { CreateFieldDto } from '@/tasks/dto/create-field.dto'
 import { UpdateFieldDto } from '@/tasks/dto/update-field.dto'
+import { SelectTaskDto } from './dto/select.dto'
 
 @Injectable()
 export class TasksService {
@@ -193,14 +194,20 @@ export class TasksService {
     projectId: string,
     userAuth: UserAuth,
     paginationDto: PaginationDto,
-    fields: boolean = false,
+    select: SelectTaskDto,
   ) {
     const { limit = 10, offset = 0 } = paginationDto
-    let select = fields ? '-__v' : '-__v -fields'
+
+    const { fields, comments } = select
+
+    let selects = '-__v'
+
+    if (fields) selects += ' -fields'
+    if (comments) selects += ' -comments'
 
     const tasks = await this.taskModel
       .find({ companyId: userAuth.companyId, projectId })
-      .select(select)
+      .select(selects)
       .populate([{ path: 'column' }, { path: 'assignedTo' }])
       .limit(limit)
       .skip(offset)

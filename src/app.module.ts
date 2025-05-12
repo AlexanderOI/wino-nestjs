@@ -14,6 +14,7 @@ import { CompanyModule } from '@/company/company.module'
 import { ProjectsModule } from '@/projects/projects.module'
 import { FormsTaskModule } from '@/forms-task/forms-task.module'
 import { PermissionModule } from '@/permissions/permissions.module'
+import { CommentsModule } from '@/comments/comments.module'
 
 @Module({
   imports: [
@@ -28,6 +29,7 @@ import { PermissionModule } from '@/permissions/permissions.module'
     ProjectsModule,
     TasksModule,
     FormsTaskModule,
+    CommentsModule,
   ],
   controllers: [AppController],
   providers: [AppService],

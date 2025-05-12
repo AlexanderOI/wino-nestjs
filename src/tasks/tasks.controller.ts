@@ -24,6 +24,7 @@ import { UpdateTaskDto } from '@/tasks/dto/update-task.dto'
 import { FilterTaskDto } from '@/tasks/dto/filter-task.dto'
 import { UpdateFieldDto } from '@/tasks/dto/update-field.dto'
 import { CreateFieldDto } from '@/tasks/dto/create-field.dto'
+import { SelectTaskDto } from '@/tasks/dto/select.dto'
 
 @Auth()
 @Controller('tasks')
@@ -58,10 +59,10 @@ export class TasksController {
   findByProject(
     @Param('projectId', ParseMongoIdPipe) projectId: string,
     @Query() paginationDto: PaginationDto,
-    @Query('fields') fields: boolean = false,
+    @Query() select: SelectTaskDto,
     @User() user: UserAuth,
   ) {
-    return this.tasksService.findByProject(projectId, user, paginationDto, fields)
+    return this.tasksService.findByProject(projectId, user, paginationDto, select)
   }
 
   @Auth(PERMISSIONS.VIEW_TASK)

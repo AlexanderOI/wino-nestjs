@@ -7,7 +7,7 @@ declare module 'fastify' {
 }
 
 export interface UserAuth {
-  _id: string | Types.ObjectId
+  _id: Types.ObjectId
   name: string
   userName: string
   email: string

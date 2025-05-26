@@ -13,6 +13,7 @@ import { TasksController } from '@/tasks/tasks.controller'
 import { UserModule } from '@/user/user.module'
 import { ProjectsModule } from '@/projects/projects.module'
 import { ColumnsModule } from '@/columns-task/columns.module'
+import { NotificationsModule } from '@/notifications/notifications.module'
 
 @Module({
   controllers: [TasksController],
@@ -26,6 +27,7 @@ import { ColumnsModule } from '@/columns-task/columns.module'
     ProjectsModule,
     UserModule,
     ColumnsModule,
+    NotificationsModule,
   ],
 })
 export class TasksModule {}

@@ -15,6 +15,7 @@ import { ProjectsModule } from '@/projects/projects.module'
 import { FormsTaskModule } from '@/forms-task/forms-task.module'
 import { PermissionModule } from '@/permissions/permissions.module'
 import { CommentsModule } from '@/comments/comments.module'
+import { NotificationsModule } from '@/notifications/notifications.module'
 
 @Module({
   imports: [
@@ -30,6 +31,7 @@ import { CommentsModule } from '@/comments/comments.module'
     TasksModule,
     FormsTaskModule,
     CommentsModule,
+    NotificationsModule,
   ],
   controllers: [AppController],
   providers: [AppService],

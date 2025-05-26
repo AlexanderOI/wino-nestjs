@@ -11,6 +11,7 @@ import { Task, TaskDocument } from '@/models/task.model'
 import { Activity, ActivityDocument } from '@/models/activity.model'
 import { Field, FieldType, FormTask } from '@/models/form-task.model'
 
+import { NotificationsService } from '@/notifications/notifications.service'
 import { ColumnsService } from '@/columns-task/columns.service'
 import { ProjectsService } from '@/projects/projects.service'
 import { UserService } from '@/user/user.service'
@@ -22,13 +23,13 @@ import { UpdateTaskDto } from '@/tasks/dto/update-task.dto'
 import { CreateFieldDto } from '@/tasks/dto/create-field.dto'
 import { UpdateFieldDto } from '@/tasks/dto/update-field.dto'
 import { SelectTaskDto } from './dto/select.dto'
-
 @Injectable()
 export class TasksService {
   constructor(
     @InjectModel(Task.name) private taskModel: Model<TaskDocument>,
     @InjectModel(Activity.name) private activityModel: Model<ActivityDocument>,
     @InjectModel(FormTask.name) private formTaskModel: Model<FormTask>,
+    private notificationsService: NotificationsService,
     private projectsService: ProjectsService,
     private userService: UserService,
     private columnsService: ColumnsService,
@@ -313,7 +314,7 @@ export class TasksService {
 
     await this.registerActivity(
       task,
-      formTask.fields[0].label,
+      'fields.' + formTask.fields[0].label,
       userAuth,
       this.formatDynamicField(previousField.value, formTask.fields[0]),
       this.formatDynamicField(updateFieldDto.value, formTask.fields[0]),
@@ -388,17 +389,16 @@ export class TasksService {
 
     if (key.startsWith('fields.')) {
       const fieldId = key.split('.')[1]
-      const field = task.fields.find((f) => f.idField.toString() === fieldId)
-      if (field) {
-        const text = `{userName} updated ${fieldId} to {newValue}`
-        return await this.createActivityRecord(
-          task,
-          text,
-          userAuth,
-          previousValue,
-          newValue,
-        )
-      }
+
+      const text = `{userName} updated ${fieldId} to {newValue}`
+
+      return await this.createActivityRecord(
+        task,
+        text,
+        userAuth,
+        previousValue,
+        newValue,
+      )
     }
 
     const message =
@@ -422,6 +422,14 @@ export class TasksService {
     const text = message
       .replace('{userName}', userAuth.name)
       .replace('{newValue}', newValue || '')
+
+    if (task.assignedToId && task.assignedToId.toString() !== userAuth._id.toString()) {
+      await this.notificationsService.sendNotification({
+        userIds: [task.assignedToId],
+        title: 'Task updated',
+        description: text,
+      })
+    }
 
     const column = await this.columnsService.findOne(task.columnId.toString())
 

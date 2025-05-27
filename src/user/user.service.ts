@@ -1,18 +1,24 @@
 import { BadRequestException, Injectable, NotFoundException } from '@nestjs/common'
-import { CreateUserDto } from './dto/create-user.dto'
-import { UpdateUserDto } from './dto/update-user.dto'
-import { User } from '@/models/user.model'
-import { Model, Types } from 'mongoose'
 import { InjectModel } from '@nestjs/mongoose'
-import { UserAuth } from '@/types'
-import { CompanyService } from '@/company/company.service'
+import { Model, Types } from 'mongoose'
 import { hash } from 'bcrypt'
-import { UserCompany, UserCompanyDocument } from '@/models/user-company.model'
-import { UserResponse } from './interfaces/user-response'
-import { CloudinaryService } from '@/cloudinary/cloudinary.service'
-import { UpdateInvitedUserDto } from './dto/update-invited-user.dto'
-import { CreateInvitedUserDto } from './dto/create-invited-user.dto'
+
 import { File } from '@nest-lab/fastify-multer'
+import { UserAuth } from '@/types'
+
+import { UserCompany, UserCompanyDocument } from '@/models/user-company.model'
+import { User } from '@/models/user.model'
+import { CompanyService } from '@/company/company.service'
+import { CloudinaryService } from '@/cloudinary/cloudinary.service'
+import { NotificationsService } from '@/notifications/notifications.service'
+
+import { UserResponse } from '@/user/interfaces/user-response'
+
+import { CreateUserDto } from '@/user/dto/create-user.dto'
+import { UpdateUserDto } from '@/user/dto/update-user.dto'
+import { UpdateInvitedUserDto } from '@/user/dto/update-invited-user.dto'
+import { CreateInvitedUserDto } from '@/user/dto/create-invited-user.dto'
+
 @Injectable()
 export class UserService {
   constructor(
@@ -22,6 +28,7 @@ export class UserService {
     private userCompanyModel: Model<UserCompanyDocument>,
     private companyService: CompanyService,
     private readonly cloudinaryService: CloudinaryService,
+    private readonly notificationsService: NotificationsService,
   ) {}
 
   async create(createUserDto: CreateUserDto, user: UserAuth) {
@@ -223,6 +230,13 @@ export class UserService {
 
     await this.companyService.addUserToCompany(newUser)
 
+    await this.notificationsService.sendNotification({
+      userIds: [userId],
+      title: 'Invitation to join company',
+      description: `You have been invited to join ${userAuth.companyName}`,
+      link: `/company`,
+    })
+
     return newUser
   }
 
@@ -249,6 +263,15 @@ export class UserService {
 
     if (!updatedUser) throw new BadRequestException('Invited user not found')
 
+    const company = await this.companyService.findOne(companyId, userAuth)
+
+    await this.notificationsService.sendNotification({
+      userIds: [company.owner._id.toString()],
+      title: 'Invitation to join company',
+      description: `The user ${userAuth.userName} has accepted the invitation to join ${company.name}`,
+      link: `/users`,
+    })
+
     return updatedUser
   }
 
@@ -259,6 +282,15 @@ export class UserService {
     })
 
     if (!updatedUser) throw new BadRequestException('Invited user not found')
+
+    const company = await this.companyService.findOne(userAuth.companyId, userAuth)
+
+    await this.notificationsService.sendNotification({
+      userIds: [userId],
+      title: 'Invitation to join company',
+      description: `The user ${userAuth.userName} has canceled the invitation to join ${company.name}`,
+      link: `/users`,
+    })
 
     return updatedUser
   }
@@ -274,6 +306,15 @@ export class UserService {
 
     if (!updatedUser) throw new BadRequestException('User not found')
 
+    const company = await this.companyService.findOne(companyId, userAuth)
+
+    await this.notificationsService.sendNotification({
+      userIds: [company.owner._id.toString()],
+      title: 'Leave company',
+      description: `The user ${userAuth.userName} has left the company ${company.name}`,
+      link: `/users`,
+    })
+
     return updatedUser
   }
 
@@ -286,6 +327,15 @@ export class UserService {
     })
 
     if (!updatedUser) throw new BadRequestException('Invited user not found')
+
+    const company = await this.companyService.findOne(companyId, userAuth)
+
+    await this.notificationsService.sendNotification({
+      userIds: [company.owner._id.toString()],
+      title: 'Invitation to join company',
+      description: `The user ${userAuth.userName} has rejected the invitation to join ${company.name}`,
+      link: `/users`,
+    })
 
     return updatedUser
   }

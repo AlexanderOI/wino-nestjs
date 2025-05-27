@@ -80,7 +80,7 @@ export class CompanyService {
     })
   }
 
-  async findOne(id: string, user: UserAuth): Promise<Company> {
+  async findOne(id: unknown, user: UserAuth): Promise<Company> {
     const company = await this.companyModel
       .findById(id)
       .populate([

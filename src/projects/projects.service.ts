@@ -14,7 +14,7 @@ import { AddProjectUsersDto } from '@/projects/dto/add-project.dto'
 
 import { ColumnsService } from '@/columns-task/columns.service'
 import { UserService } from '@/user/user.service'
-import { FormsTaskService } from '@/forms-task/forms-task.service'
+import { NotificationsService } from '@/notifications/notifications.service'
 
 @Injectable()
 export class ProjectsService {
@@ -27,6 +27,7 @@ export class ProjectsService {
     private readonly userCompanyModel: Model<UserCompanyDocument>,
     private readonly columnsService: ColumnsService,
     private readonly userService: UserService,
+    private readonly notificationsService: NotificationsService,
   ) {}
 
   async create(createProjectDto: CreateProjectDto, userAuth: UserAuth) {
@@ -36,6 +37,18 @@ export class ProjectsService {
     })
 
     await this.columnsService.createDefaultColumns(project._id, userAuth.companyId)
+
+    if (
+      createProjectDto.leaderId &&
+      createProjectDto.leaderId.toString() !== userAuth._id.toString()
+    ) {
+      await this.notificationsService.sendNotification({
+        userIds: [createProjectDto.leaderId.toString()],
+        title: 'New project',
+        description: `You are the leader of the project ${project.name}`,
+        link: `/projects/${project._id}`,
+      })
+    }
 
     return project
   }
@@ -89,18 +102,38 @@ export class ProjectsService {
     return projectResponse
   }
 
-  update(id: string, updateProjectDto: UpdateProjectDto) {
-    const project = this.projectModel.findByIdAndUpdate(id, updateProjectDto)
+  async update(id: string, updateProjectDto: UpdateProjectDto) {
+    const project = await this.projectModel.findById(id)
 
     if (!project) throw new NotFoundException('Project not found')
+
+    if (
+      updateProjectDto.leaderId &&
+      updateProjectDto.leaderId.toString() !== project.leaderId.toString()
+    ) {
+      await this.notificationsService.sendNotification({
+        userIds: [updateProjectDto.leaderId.toString()],
+        title: 'Project updated',
+        description: `You are the leader of the project ${project.name}`,
+        link: `/project/${project._id}`,
+      })
+    }
 
     return project
   }
 
-  remove(id: string) {
-    const project = this.projectModel.findByIdAndDelete(id)
+  async remove(id: string) {
+    const project = await this.projectModel.findByIdAndDelete(id)
 
     if (!project) throw new NotFoundException('Project not found')
+
+    await this.columnsService.deleteAllColumns(project._id)
+
+    await this.notificationsService.sendNotification({
+      userIds: project.membersId,
+      title: 'Project deleted',
+      description: `The project ${project.name} has been deleted`,
+    })
 
     return project
   }
@@ -115,6 +148,31 @@ export class ProjectsService {
     })
 
     if (!users) throw new NotFoundException('Users not found')
+
+    const currentMemberIds = project.membersId.map((id) => id.toString())
+    const newMemberIds = addProjectUsersDto.membersId.map((id) => id.toString())
+
+    const removedMemberIds = currentMemberIds.filter((id) => !newMemberIds.includes(id))
+
+    const addedMemberIds = newMemberIds.filter((id) => !currentMemberIds.includes(id))
+
+    if (removedMemberIds.length > 0) {
+      await this.notificationsService.sendNotification({
+        userIds: removedMemberIds,
+        title: 'Project membership update',
+        description: `You have been removed from the project ${project.name}`,
+        link: `/project/${project._id}`,
+      })
+    }
+
+    if (addedMemberIds.length > 0) {
+      await this.notificationsService.sendNotification({
+        userIds: addedMemberIds,
+        title: 'Project membership update',
+        description: `You have been added to the project ${project.name}`,
+        link: `/project/${project._id}`,
+      })
+    }
 
     await project.updateOne({ membersId: users.map((user) => user._id) })
 

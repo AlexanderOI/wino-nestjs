@@ -24,6 +24,7 @@ import { CreateUserDto } from '@/user/dto/create-user.dto'
 import { UpdateUserDto } from '@/user/dto/update-user.dto'
 import { CreateInvitedUserDto } from '@/user/dto/create-invited-user.dto'
 import { UpdateInvitedUserDto } from '@/user/dto/update-invited-user.dto'
+
 @Auth()
 @Controller('users')
 export class UserController {

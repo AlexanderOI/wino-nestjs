@@ -22,7 +22,8 @@ import { CreateTaskDto } from '@/tasks/dto/create-task.dto'
 import { UpdateTaskDto } from '@/tasks/dto/update-task.dto'
 import { CreateFieldDto } from '@/tasks/dto/create-field.dto'
 import { UpdateFieldDto } from '@/tasks/dto/update-field.dto'
-import { SelectTaskDto } from './dto/select.dto'
+import { SelectTaskDto } from '@/tasks/dto/select.dto'
+
 @Injectable()
 export class TasksService {
   constructor(

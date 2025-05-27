@@ -134,4 +134,13 @@ export class ColumnsService {
 
     return columnsWithTasksCount
   }
+
+  async deleteAllColumns(projectId: unknown) {
+    const columns = this.columnTaskModel.deleteMany({ projectId })
+    const tasks = this.taskModel.deleteMany({ projectId })
+
+    await Promise.all([columns, tasks])
+
+    return { message: 'All columns and tasks deleted successfully' }
+  }
 }

@@ -9,6 +9,7 @@ import { UserCompany, UserCompanySchema } from '@/models/user-company.model'
 import { FormsTaskModule } from '@/forms-task/forms-task.module'
 import { ColumnsModule } from '@/columns-task/columns.module'
 import { UserModule } from '@/user/user.module'
+import { NotificationsModule } from '@/notifications/notifications.module'
 
 import { ProjectsService } from '@/projects/projects.service'
 import { ProjectsController } from '@/projects/projects.controller'
@@ -25,6 +26,7 @@ import { ProjectsController } from '@/projects/projects.controller'
     ColumnsModule,
     UserModule,
     FormsTaskModule,
+    NotificationsModule,
   ],
   exports: [ProjectsService],
 })

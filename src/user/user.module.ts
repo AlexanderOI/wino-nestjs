@@ -1,13 +1,17 @@
 import { Module } from '@nestjs/common'
-import { UserService } from './user.service'
-import { UserController } from './user.controller'
-import { User, UserSchema } from '@/models/user.model'
-import { MongooseModule } from '@nestjs/mongoose'
 import { JwtService } from '@nestjs/jwt'
+import { MongooseModule } from '@nestjs/mongoose'
+
+import { UserService } from '@/user/user.service'
+import { UserController } from '@/user/user.controller'
+
+import { User, UserSchema } from '@/models/user.model'
+import { UserCompany, UserCompanySchema } from '@/models/user-company.model'
+
 import { CompanyModule } from '@/company/company.module'
-import { UserCompanySchema } from '@/models/user-company.model'
-import { UserCompany } from '@/models/user-company.model'
 import { CloudinaryModule } from '@/cloudinary/cloudinary.module'
+import { NotificationsModule } from '@/notifications/notifications.module'
+
 @Module({
   controllers: [UserController],
   providers: [UserService, JwtService],
@@ -18,6 +22,7 @@ import { CloudinaryModule } from '@/cloudinary/cloudinary.module'
     ]),
     CompanyModule,
     CloudinaryModule,
+    NotificationsModule,
   ],
   exports: [UserService],
 })

@@ -1,18 +1,34 @@
 import { Injectable } from '@nestjs/common'
 import { InjectModel } from '@nestjs/mongoose'
 import { Model, Types } from 'mongoose'
+import { File } from '@nest-lab/fastify-multer'
 
 import { Comment, CommentDocument } from '@/models/comment.model'
 import { CreateCommentDto } from '@/comments/dto/create-comment.dto'
 import { UpdateCommentDto } from '@/comments/dto/update-comment.dto'
+import { CloudinaryService } from '@/cloudinary/cloudinary.service'
+import { NotificationsService } from '@/notifications/notifications.service'
+import { JSONContentNode } from '@/common/json-content.dto'
+import { extractMentionIds } from '@/common/utils/extract-mentions'
+import { UserAuth } from '@/types'
 
 @Injectable()
 export class CommentsService {
-  constructor(@InjectModel(Comment.name) private commentModel: Model<CommentDocument>) {}
+  constructor(
+    @InjectModel(Comment.name) private commentModel: Model<CommentDocument>,
+    private readonly cloudinaryService: CloudinaryService,
+    private readonly notificationsService: NotificationsService,
+  ) {}
 
-  async create(createCommentDto: CreateCommentDto): Promise<CommentDocument> {
-    const createdComment = new this.commentModel(createCommentDto)
-    return createdComment.save()
+  async create(
+    createCommentDto: CreateCommentDto,
+    userAuth: UserAuth,
+  ): Promise<CommentDocument> {
+    const createdComment = await this.commentModel.create(createCommentDto)
+
+    await this.sendNotification(createCommentDto.content, createdComment, userAuth)
+
+    return createdComment
   }
 
   async findAllByTask(taskId: string): Promise<any[]> {
@@ -43,12 +59,20 @@ export class CommentsService {
       .exec()
   }
 
-  async update(id: string, updateCommentDto: UpdateCommentDto): Promise<CommentDocument> {
-    return this.commentModel
+  async update(
+    id: string,
+    updateCommentDto: UpdateCommentDto,
+    userAuth: UserAuth,
+  ): Promise<CommentDocument> {
+    const updatedComment = await this.commentModel
       .findByIdAndUpdate(id, { ...updateCommentDto, isEdited: true }, { new: true })
       .populate('user', '_id name userName email avatar')
       .populate('parent')
       .exec()
+
+    await this.sendNotification(updateCommentDto.content, updatedComment, userAuth)
+
+    return updatedComment
   }
 
   async remove(id: string): Promise<CommentDocument> {
@@ -84,6 +108,36 @@ export class CommentsService {
         ...commentObj,
         replies,
       }
+    })
+  }
+
+  async uploadImage(file: File): Promise<{ url: string }> {
+    const imageUrl = await this.cloudinaryService.uploadImage(file)
+    return { url: imageUrl }
+  }
+
+  private async sendNotification(
+    content: JSONContentNode,
+    comment: CommentDocument,
+    userAuth: UserAuth,
+  ) {
+    const mentionIds = extractMentionIds(content)
+    const filteredMentionIds = new Set(
+      mentionIds.filter((id) => id.toString() !== userAuth._id.toString()),
+    )
+
+    if (mentionIds.length === 0) return
+
+    const populatedComment = await this.commentModel
+      .findById(comment._id)
+      .populate('task', 'name')
+      .exec()
+
+    if (!populatedComment?.task) return
+    await this.notificationsService.sendNotification({
+      userIds: Array.from(filteredMentionIds),
+      title: 'New mention in comment',
+      description: `You have been mentioned in a comment on the task "${populatedComment.task.name}"`,
     })
   }
 }

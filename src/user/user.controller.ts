@@ -77,7 +77,7 @@ export class UserController {
   @Post('upload-avatar')
   @UseInterceptors(FileInterceptor('file', multerOptions))
   async uploadAvatar(@UploadedFile() file: File, @User() user: UserAuth) {
-    return this.userService.uploadAvatar(file, user)
+    return this.userService.uploadImage(file, user)
   }
 
   @Auth(PERMISSIONS.CREATE_USER)

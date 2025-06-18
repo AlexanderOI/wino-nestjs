@@ -1,8 +1,11 @@
-import { IsNotEmpty, IsOptional } from 'class-validator'
-import { JSONContent } from '@/types/json-content.type'
+import { IsNotEmpty, ValidateNested } from 'class-validator'
+import { Type } from 'class-transformer'
+
+import { JSONContentNode } from '@/common/json-content.dto'
 
 export class UpdateCommentDto {
-  @IsOptional()
   @IsNotEmpty()
-  content?: JSONContent
+  @ValidateNested()
+  @Type(() => JSONContentNode)
+  content: JSONContentNode
 }

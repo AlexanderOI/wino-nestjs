@@ -13,7 +13,7 @@ export class CloudinaryService {
     })
   }
 
-  async uploadAvatar(file: File) {
+  async uploadImage(file: File) {
     const optimizedImage = await sharp(file.buffer)
       .resize(512, 512, { fit: 'cover' })
       .toFormat('webp')

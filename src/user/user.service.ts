@@ -176,14 +176,14 @@ export class UserService {
     return 'Successfully changed company'
   }
 
-  async uploadAvatar(file: File, user: UserAuth): Promise<{ url: string }> {
-    const avatarUrl = await this.cloudinaryService.uploadAvatar(file)
+  async uploadImage(file: File, user: UserAuth): Promise<{ url: string }> {
+    const imageUrl = await this.cloudinaryService.uploadImage(file)
 
     await this.userModel.findByIdAndUpdate(user._id, {
-      $set: { avatar: avatarUrl },
+      $set: { avatar: imageUrl },
     })
 
-    return { url: avatarUrl }
+    return { url: imageUrl }
   }
 
   async findInvitedUser(userName: string, userAuth: UserAuth) {

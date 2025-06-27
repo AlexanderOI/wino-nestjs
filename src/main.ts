@@ -39,7 +39,7 @@ async function bootstrap() {
     }),
   )
 
-  await app.listen(process.env.PORT)
+  await app.listen(process.env.PORT, '0.0.0.0')
   console.log(`🚀 App started in ${Date.now() - start}ms`)
 }
 bootstrap()

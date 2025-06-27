@@ -15,6 +15,12 @@ async function bootstrap() {
   const fastifyInstance = app.getHttpAdapter().getInstance()
   await fastifyInstance.register(multipart as any)
 
+  console.log(
+    process.env.APP_URL,
+    'process.env.APP_URL',
+    process.env.PORT,
+    'process.env.PORT',
+  )
   app.enableCors({
     origin: process.env.APP_URL,
     methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH'],

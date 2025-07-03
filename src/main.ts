@@ -15,15 +15,14 @@ async function bootstrap() {
   const fastifyInstance = app.getHttpAdapter().getInstance()
   await fastifyInstance.register(multipart as any)
 
-  console.log(
-    process.env.APP_URL,
-    'process.env.APP_URL',
-    process.env.PORT,
-    'process.env.PORT',
-  )
+  const corsOrigins = process.env.APP_URL
+    ? process.env.APP_URL.split(',').map((url) => url.trim())
+    : ['http://localhost:3000']
+
   app.enableCors({
-    origin: process.env.APP_URL,
+    origin: corsOrigins,
     methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH'],
+    credentials: true,
   })
 
   const config = new DocumentBuilder()

@@ -10,6 +10,10 @@ export class CreateProjectDto {
 
   @IsNotEmpty()
   @IsString()
+  code: string
+
+  @IsNotEmpty()
+  @IsString()
   description: string
 
   @IsNotEmpty()

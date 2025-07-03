@@ -37,9 +37,15 @@ export class TasksService {
   ) {}
 
   async create(createTaskDto: CreateTaskDto, userAuth: UserAuth) {
+    const lastTask = await this.taskModel
+      .findOne({ companyId: userAuth.companyId })
+      .sort({ code: -1 })
+    const code = lastTask ? lastTask.code + 1 : 1
+
     const task = await this.taskModel.create({
       ...createTaskDto,
       companyId: userAuth.companyId,
+      code,
     })
     if (!task) throw new NotFoundException('Task not created')
 
@@ -87,7 +93,9 @@ export class TasksService {
                 localField: 'assignedToId',
                 foreignField: '_id',
                 as: 'assignedTo',
-                pipeline: [{ $project: { name: 1, email: 1, avatar: 1 } }],
+                pipeline: [
+                  { $project: { name: 1, email: 1, avatar: 1, avatarColor: 1 } },
+                ],
               },
             },
             { $unwind: { path: '$assignedTo', preserveNullAndEmptyArrays: true } },
@@ -228,21 +236,24 @@ export class TasksService {
 
     const task = await this.taskModel
       .findById(id)
-      .populate([{ path: 'column', select: '-__v' }])
+      .populate([
+        { path: 'column', select: '-__v' },
+        { path: 'assignedTo', select: 'name avatar avatarColor' },
+        {
+          path: 'project',
+          select: 'name members membersId',
+          populate: {
+            path: 'members',
+            select: 'name avatar avatarColor',
+          },
+        },
+      ])
       .select(select)
       .lean()
 
     if (!task) throw new NotFoundException('Task not found')
 
-    const taskResponse = {
-      ...task,
-      project: await this.projectsService.findOne(task.projectId, userAuth, true),
-      assignedTo: task.assignedToId
-        ? await this.userService.findOne(task.assignedToId, userAuth, true)
-        : null,
-    }
-
-    return taskResponse
+    return task
   }
 
   async update(id: string, updateTaskDto: UpdateTaskDto, userAuth: UserAuth) {

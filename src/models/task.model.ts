@@ -27,6 +27,9 @@ export class Task extends Document {
   description: JSONContent
 
   @Prop({ type: Number, default: 0 })
+  code: number
+
+  @Prop({ type: Number, default: 0 })
   order: number
 
   @Prop({ type: Types.ObjectId, ref: 'User' })

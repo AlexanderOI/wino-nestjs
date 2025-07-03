@@ -11,6 +11,9 @@ export class Project extends Document {
   name: string
 
   @Prop()
+  code: string
+
+  @Prop()
   description: string
 
   @Prop({ type: Types.ObjectId, ref: 'User' })

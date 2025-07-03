@@ -3,26 +3,26 @@ import { InjectModel } from '@nestjs/mongoose'
 import { Model } from 'mongoose'
 import { hash } from 'bcrypt'
 
-import { User, UserDocument } from '@/models/user.model'
-import { permissions } from '@/permissions/constants/permissions'
-import { Permission } from '@/models/permission.model'
-import { Role } from '@/models/role.model'
-import { Company, CompanyDocument } from '@/models/company.model'
-import { UserCompany, UserCompanyDocument } from '@/models/user-company.model'
 import {
   initialUsers,
   initialCompany,
   initialTasks,
   initialProjects,
   initialRoles,
-} from './data.seed'
-import { ActivityDocument } from '@/models/activity.model'
-import { Activity } from '@/models/activity.model'
-import { TaskDocument } from '@/models/task.model'
-import { Task } from '@/models/task.model'
+} from '@/data/data.seed'
+import { avatarColors } from '@/user/constants/avatar-colors'
+import { permissions } from '@/permissions/constants/permissions'
+
+import { User, UserDocument } from '@/models/user.model'
+import { UserCompany, UserCompanyDocument } from '@/models/user-company.model'
+import { Company, CompanyDocument } from '@/models/company.model'
+import { Project, ProjectDocument } from '@/models/project.model'
+import { Activity, ActivityDocument } from '@/models/activity.model'
+import { Task, TaskDocument } from '@/models/task.model'
 import { ColumnTask } from '@/models/column-task.model'
-import { ProjectDocument } from '@/models/project.model'
-import { Project } from '@/models/project.model'
+import { Permission } from '@/models/permission.model'
+import { Role } from '@/models/role.model'
+
 import { ColumnsService } from '@/columns-task/columns.service'
 
 @Injectable()
@@ -58,7 +58,7 @@ export class DataService {
     const adminUser = await this.insertUsers(company, roles)
     await this.insertProjects(adminUser)
 
-    return { message: 'Datos iniciales creados exitosamente' }
+    return { message: 'Initial data created successfully' }
   }
 
   async createDemoData(userId: unknown) {
@@ -105,77 +105,131 @@ export class DataService {
       })
     }
 
-    for (const userData of initialUsers) {
-      const hashedPassword = await hash(userData.password, 10)
-      const role = user ? roles[0] : roles[userData.roleType === 'admin' ? 0 : 1]
+    const hashedPasswords = await Promise.all(
+      initialUsers.map((userData) => hash(userData.password, 10)),
+    )
 
+    const usersToInsert = initialUsers.map((userData, index) => {
+      const role = user ? roles[0] : roles[userData.roleType === 'admin' ? 0 : 1]
       const { userName, email } = userData
 
-      const newUserName =
-        userData.roleType === 'admin' ? userName : userName + company.name
-
-      const newUser = await this.userModel.create({
-        ...userData,
-        userName: newUserName,
-        email: email.split('@')[0] + '@' + company.name + '.com',
-        password: user ? user.password : hashedPassword,
-        currentCompanyId: company._id,
-      })
-
-      let owner = user?._id || company.owner
-
-      if (userData.roleType === 'admin' && !user) {
-        adminUser = newUser
-        owner = newUser._id
+      let newUserName: string
+      if (user) {
+        newUserName = userName + '_' + company.name + '_' + Date.now() + '_' + index
+      } else {
+        newUserName = userData.roleType === 'admin' ? userName : userName + company.name
       }
 
-      const userCompany = await this.userCompanyModel.create({
+      let newEmail: string
+      if (user) {
+        const emailParts = email.split('@')
+        newEmail = `${emailParts[0]}_${company.name}_${Date.now()}_${index}@${company.name}.com`
+      } else {
+        newEmail = `${email.split('@')[0]}_${company.name}@${company.name}.com`
+      }
+
+      const avatarColor = this.getRandomAvatarColor()
+
+      return {
+        ...userData,
+        userName: newUserName,
+        email: newEmail,
+        password: user ? user.password : hashedPasswords[index],
+        currentCompanyId: company._id,
+        avatarColor,
+      }
+    })
+
+    const createdUsers = (await this.userModel.insertMany(
+      usersToInsert,
+    )) as UserDocument[]
+
+    const userCompaniesToInsert = createdUsers.map((newUser, index) => {
+      const userData = initialUsers[index]
+      const role = user ? roles[0] : roles[userData.roleType === 'admin' ? 0 : 1]
+
+      return {
         userId: newUser._id,
         companyId: company._id,
         rolesId: [role._id],
         roleType: userData.roleType,
-      })
+      }
+    })
 
-      await this.companyModel.findByIdAndUpdate(company._id, {
-        $push: {
-          usersCompany: userCompany._id,
-        },
-        owner,
-      })
+    const createdUserCompanies =
+      await this.userCompanyModel.insertMany(userCompaniesToInsert)
+
+    const adminUserIndex = initialUsers.findIndex(
+      (userData) => userData.roleType === 'admin',
+    )
+    if (adminUserIndex !== -1 && !user) {
+      adminUser = createdUsers[adminUserIndex]
     }
+
+    const owner = user?._id || (adminUser ? adminUser._id : company.owner)
+
+    await this.companyModel.findByIdAndUpdate(company._id, {
+      $push: {
+        usersCompany: { $each: createdUserCompanies.map((uc) => uc._id) },
+      },
+      owner,
+    })
 
     return adminUser
   }
 
   private async insertProjects(adminUser: UserDocument) {
+    const users = await this.userModel
+      .find({ currentCompanyId: adminUser.currentCompanyId })
+      .select('_id')
+
+    const usersIds = users.map((user) => user._id)
+
     const projects = initialProjects.map((project) => ({
       ...project,
       leaderId: adminUser._id,
       companyId: adminUser.currentCompanyId,
+      membersId: usersIds,
     }))
 
-    const firstProject = await this.projectModel.create(projects[0])
-    const otherProjects = await this.projectModel.create(projects.slice(1))
+    const createdProjects = await this.projectModel.insertMany(projects)
 
-    await Promise.all(
-      otherProjects.map((project) =>
+    const projectColumns = await Promise.all(
+      createdProjects.map((project) =>
         this.columnService.createDefaultColumns(project._id, adminUser.currentCompanyId),
       ),
     )
 
-    const columns = await this.columnService.createDefaultColumns(
-      firstProject._id,
-      adminUser.currentCompanyId,
-    )
+    const taskDistribution = [
+      { projectIndex: 0, startTask: 0, endTask: 26 }, // WINO - Project and Task Manager
+      { projectIndex: 1, startTask: 26, endTask: 56 }, // EXO – Expense Organizer
+      { projectIndex: 2, startTask: 56, endTask: 68 }, // BOW - Battle of Words
+      { projectIndex: 3, startTask: 68, endTask: 78 }, // LINKIO - Link Interaction Online
+    ]
 
-    for (const taskData of initialTasks) {
-      const column = columns[taskData.column]
-      const task = await this.taskModel.create({
-        ...taskData,
-        projectId: firstProject._id,
-        columnId: column._id,
+    const allTasksToInsert = taskDistribution.flatMap((distribution) => {
+      const project = createdProjects[distribution.projectIndex]
+      const columns = projectColumns[distribution.projectIndex]
+      const projectTasks = initialTasks.slice(
+        distribution.startTask,
+        distribution.endTask,
+      )
+
+      return projectTasks.map((taskData, index) => {
+        const column = columns[taskData.column]
+        return {
+          ...taskData,
+          code: distribution.startTask + index + 1,
+          order: index + 1,
+          projectId: project._id,
+          columnId: column._id,
+          companyId: adminUser.currentCompanyId,
+          assignedToId: usersIds[Math.floor(Math.random() * usersIds.length)],
+        }
       })
-    }
+    })
+
+    await this.taskModel.insertMany(allTasksToInsert)
   }
 
   async deleteAll() {
@@ -190,5 +244,9 @@ export class DataService {
       this.taskModel.deleteMany({}),
       this.columnTaskModel.deleteMany({}),
     ])
+  }
+
+  getRandomAvatarColor() {
+    return avatarColors[Math.floor(Math.random() * avatarColors.length)]
   }
 }

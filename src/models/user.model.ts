@@ -41,6 +41,9 @@ export class User extends Document {
 
   @Prop({ default: 'avatar.png' })
   avatar: string
+
+  @Prop({ default: '#52555E' })
+  avatarColor: string
 }
 
 export const UserSchema = SchemaFactory.createForClass(User)

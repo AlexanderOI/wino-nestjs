@@ -5,6 +5,7 @@ export interface UserResponse {
   userName: string
   email: string
   avatar: string
+  avatarColor: string
   roles: string[]
   rolesId: string[]
   roleType: string

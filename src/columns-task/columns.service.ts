@@ -93,6 +93,13 @@ export class ColumnsService {
         columns.map(async (column) => {
           const tasks = await this.taskModel
             .find({ columnId: column._id })
+            .populate([
+              {
+                path: 'assignedTo',
+                select: 'name avatar avatarColor',
+              },
+            ])
+            .select('name description code order assignedToId assignedTo')
             .sort({ order: 1 })
           return { ...column.toObject(), tasks }
         }),

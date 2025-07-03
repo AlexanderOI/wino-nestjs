@@ -22,6 +22,7 @@ import { UserAuth } from '@/types'
 import { UserPayload } from './interfaces/user-payload'
 import { toObjectId } from '@/common/transformer.mongo-id'
 import { DataService } from '@/data/data.service'
+import { avatarColors } from '@/user/constants/avatar-colors'
 
 @Injectable()
 export class AuthService {
@@ -57,8 +58,11 @@ export class AuthService {
       })
     }
 
+    const avatarColor = await this.getRandomAvatarColor()
+
     const user = await this.userModel.create({
       ...userToCreate,
+      avatarColor,
     })
 
     const permissions = await this.permissioModel.find()
@@ -209,5 +213,9 @@ export class AuthService {
       .lean()
 
     return userCompany
+  }
+
+  async getRandomAvatarColor() {
+    return avatarColors[Math.floor(Math.random() * avatarColors.length)]
   }
 }

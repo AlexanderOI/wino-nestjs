@@ -18,6 +18,7 @@ import { CreateUserDto } from '@/user/dto/create-user.dto'
 import { UpdateUserDto } from '@/user/dto/update-user.dto'
 import { UpdateInvitedUserDto } from '@/user/dto/update-invited-user.dto'
 import { CreateInvitedUserDto } from '@/user/dto/create-invited-user.dto'
+import { avatarColors } from '@/user/constants/avatar-colors'
 
 @Injectable()
 export class UserService {
@@ -44,10 +45,13 @@ export class UserService {
 
     if (userExists) throw new BadRequestException('Username or email already in use')
 
+    const avatarColor = await this.getRandomAvatarColor()
+
     const newUser = await this.userModel.create({
       ...userData,
       currentCompanyId: user.companyId,
       password: await hash(password, 10),
+      avatarColor,
     })
 
     const userCompany = await this.userCompanyModel.create({
@@ -352,7 +356,7 @@ export class UserService {
       updatedAt,
       invitePending,
     } = userCompany
-    const { _id, name, userName, email, avatar } = user
+    const { _id, name, userName, email, avatar, avatarColor } = user
 
     return {
       _id: _id.toString(),
@@ -360,6 +364,7 @@ export class UserService {
       userName,
       email,
       avatar,
+      avatarColor,
       roles: roles?.map((role) => role.name),
       rolesId: roles?.map((role) => role._id.toString()),
       roleType,
@@ -370,5 +375,9 @@ export class UserService {
       createdAt,
       updatedAt,
     }
+  }
+
+  async getRandomAvatarColor() {
+    return avatarColors[Math.floor(Math.random() * avatarColors.length)]
   }
 }

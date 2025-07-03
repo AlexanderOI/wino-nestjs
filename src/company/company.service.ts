@@ -61,7 +61,7 @@ export class CompanyService {
           { _id: { $in: userCompany.map((user) => user.companyId) } },
         ],
       })
-      .populate([{ path: 'owner', select: 'name avatar' }])
+      .populate([{ path: 'owner', select: 'name avatar avatarColor' }])
       .select('-updatedAt -__v')
       .lean()
 
@@ -84,7 +84,7 @@ export class CompanyService {
     const company = await this.companyModel
       .findById(id)
       .populate([
-        { path: 'owner', select: 'name avatar' },
+        { path: 'owner', select: 'name avatar avatarColor' },
         { path: 'usersCompany', match: { userId: user._id } },
       ])
       .select('-updatedAt -createdAt -__v')

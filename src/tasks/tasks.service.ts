@@ -23,6 +23,7 @@ import { UpdateTaskDto } from '@/tasks/dto/update-task.dto'
 import { CreateFieldDto } from '@/tasks/dto/create-field.dto'
 import { UpdateFieldDto } from '@/tasks/dto/update-field.dto'
 import { SelectTaskDto } from '@/tasks/dto/select.dto'
+import { FilterTaskActivityDto } from '@/tasks/dto/filter-task-activity'
 
 @Injectable()
 export class TasksService {
@@ -358,26 +359,41 @@ export class TasksService {
     }
   }
 
-  async getTaskActivity(
+  async getRecentTaskActivity(
     userAuth: UserAuth,
-    projectId?: string,
-    taskId?: string,
-    userId?: string,
+    filterTaskActivityDto: FilterTaskActivityDto,
   ) {
-    let filters = {}
-
-    if (projectId) filters['projectId'] = toObjectId(projectId)
-    if (taskId) filters['taskId'] = toObjectId(taskId)
-    if (userId) filters['userId'] = toObjectId(userId)
+    const { offset = 0, limit = 15, ...filters } = filterTaskActivityDto
 
     let activities = await this.activityModel
       .find({ ...filters, companyId: userAuth.companyId })
       .sort({ createdAt: -1 })
       .populate([
-        { path: 'user', select: 'name email avatar' },
-        { path: 'company', select: 'name' },
+        { path: 'task', select: 'name' },
+        { path: 'user', select: 'name email avatar avatarColor' },
+        { path: 'column', select: 'name color' },
       ])
+      .select('text column type userId projectId createdAt')
+      .skip(offset)
+      .limit(limit)
+      .lean()
+
+    return activities
+  }
+
+  async getTaskActivity(
+    userAuth: UserAuth,
+    filterTaskActivityDto: FilterTaskActivityDto,
+  ) {
+    const { offset = 0, limit = 15, ...filters } = filterTaskActivityDto
+
+    let activities = await this.activityModel
+      .find({ ...filters, companyId: userAuth.companyId })
+      .sort({ createdAt: -1 })
+      .populate([{ path: 'user', select: 'name email avatar avatarColor' }])
       .select('-__v')
+      .skip(offset)
+      .limit(limit)
       .lean()
 
     return activities

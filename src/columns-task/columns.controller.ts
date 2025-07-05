@@ -9,14 +9,17 @@ import {
   Patch,
   Query,
 } from '@nestjs/common'
-import { ColumnsService } from './columns.service'
-import { CreateColumnTaskDto } from './dto/create-column.dto'
-import { UpdateColumnTaskDto } from './dto/update-column.dto'
-import { ParseMongoIdPipe } from '@/common/parse-mongo-id.pipe'
-import { Auth } from '@/auth/auth.decorator'
-import { PERMISSIONS } from '@/permissions/constants/permissions'
+
 import { UserAuth } from '@/types'
+import { Auth } from '@/auth/auth.decorator'
 import { User } from '@/auth/decorators/user.decorator'
+import { ParseMongoIdPipe } from '@/common/parse-mongo-id.pipe'
+import { PERMISSIONS } from '@/permissions/constants/permissions'
+
+import { ColumnsService } from '@/columns-task/columns.service'
+import { CreateColumnTaskDto } from '@/columns-task/dto/create-column.dto'
+import { UpdateColumnTaskDto } from '@/columns-task/dto/update-column.dto'
+
 @Controller('columns')
 @Auth()
 export class ColumnsController {

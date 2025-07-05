@@ -122,22 +122,38 @@ export class ColumnsService {
   }
 
   async getTotalTaskPerColumns(user: UserAuth, projectId?: string) {
-    const filter = {
+    const matchFilter: any = {
       companyId: user.companyId,
     }
-    if (projectId) filter['projectId'] = toObjectId(projectId)
+    if (projectId) matchFilter.projectId = toObjectId(projectId)
 
-    const columns = await this.columnTaskModel.find({ ...filter, isActive: true })
-
-    const columnsWithTasksCount = await Promise.all(
-      columns.map(async (column) => ({
-        ...column.toObject(),
-        tasksCount: await this.taskModel.countDocuments({
-          ...filter,
-          columnId: column._id,
-        }),
-      })),
-    )
+    const columnsWithTasksCount = await this.columnTaskModel.aggregate([
+      { $match: { ...matchFilter, isActive: true } },
+      { $sort: { order: 1 } },
+      {
+        $lookup: {
+          from: 'tasks',
+          localField: '_id',
+          foreignField: 'columnId',
+          as: 'tasks',
+          pipeline: [
+            {
+              $match: matchFilter,
+            },
+          ],
+        },
+      },
+      {
+        $addFields: {
+          tasksCount: { $size: '$tasks' },
+        },
+      },
+      {
+        $project: {
+          tasks: 0,
+        },
+      },
+    ])
 
     return columnsWithTasksCount
   }

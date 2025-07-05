@@ -25,6 +25,7 @@ import { FilterTaskDto } from '@/tasks/dto/filter-task.dto'
 import { UpdateFieldDto } from '@/tasks/dto/update-field.dto'
 import { CreateFieldDto } from '@/tasks/dto/create-field.dto'
 import { SelectTaskDto } from '@/tasks/dto/select.dto'
+import { FilterTaskActivityDto } from '@/tasks/dto/filter-task-activity'
 
 @Auth()
 @Controller('tasks')
@@ -40,12 +41,19 @@ export class TasksController {
   @Auth(PERMISSIONS.VIEW_TASK)
   @Get('activity')
   getTaskActivity(
-    @Query('projectId') projectId: string,
-    @Query('taskId') taskId: string,
-    @Query('userId') userId: string,
+    @Query() filterTaskActivityDto: FilterTaskActivityDto,
     @User() user: UserAuth,
   ) {
-    return this.tasksService.getTaskActivity(user, projectId, taskId, userId)
+    return this.tasksService.getTaskActivity(user, filterTaskActivityDto)
+  }
+
+  @Auth(PERMISSIONS.VIEW_TASK)
+  @Get('activity/recent')
+  getRecentTaskActivity(
+    @Query() filterTaskActivityDto: FilterTaskActivityDto,
+    @User() user: UserAuth,
+  ) {
+    return this.tasksService.getRecentTaskActivity(user, filterTaskActivityDto)
   }
 
   @Auth(PERMISSIONS.VIEW_TASK)

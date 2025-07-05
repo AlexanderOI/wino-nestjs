@@ -3,7 +3,7 @@ import { Document } from 'mongoose'
 
 @Schema({ timestamps: true })
 export class Permission extends Document {
-  @Prop({ required: true, unique: true })
+  @Prop({ index: true, required: true, unique: true })
   name: string
 
   @Prop({ required: true })

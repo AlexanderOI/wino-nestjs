@@ -30,7 +30,7 @@ export class User extends Document {
   })
   password: string
 
-  @Prop({ type: Types.ObjectId, ref: 'Company' })
+  @Prop({ index: true, type: Types.ObjectId, ref: 'Company' })
   currentCompanyId: Types.ObjectId
 
   @Prop()
@@ -39,7 +39,7 @@ export class User extends Document {
   @Prop()
   personal: boolean
 
-  @Prop({ default: 'avatar.png' })
+  @Prop()
   avatar: string
 
   @Prop({ default: '#52555E' })

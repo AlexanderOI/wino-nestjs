@@ -5,7 +5,7 @@ import { User } from '@/models/user.model'
 
 @Schema({ timestamps: true, toJSON: { virtuals: true }, toObject: { virtuals: true } })
 export class Notification extends Document {
-  @Prop({ required: true, type: [Types.ObjectId], ref: 'User' })
+  @Prop({ index: true, required: true, type: [Types.ObjectId], ref: 'User' })
   userIds: Types.ObjectId[]
 
   @Prop({ required: true })

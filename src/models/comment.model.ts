@@ -7,16 +7,16 @@ import { JSONContent } from '@/types/json-content.type'
 
 @Schema({ timestamps: true, toJSON: { virtuals: true }, toObject: { virtuals: true } })
 export class Comment extends Document {
-  @Prop({ required: true, type: Types.ObjectId, ref: 'Task' })
+  @Prop({ index: true, required: true, type: Types.ObjectId, ref: 'Task' })
   taskId: Types.ObjectId
 
-  @Prop({ required: true, type: Types.ObjectId, ref: 'User' })
+  @Prop({ index: true, required: true, type: Types.ObjectId, ref: 'User' })
   userId: Types.ObjectId
 
   @Prop({ required: true, type: MongooseSchema.Types.Mixed })
   content: JSONContent
 
-  @Prop({ type: Types.ObjectId, ref: 'Comment' })
+  @Prop({ index: true, type: Types.ObjectId, ref: 'Comment' })
   parentId?: Types.ObjectId
 
   @Prop({ default: false })

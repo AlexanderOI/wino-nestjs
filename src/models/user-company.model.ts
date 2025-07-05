@@ -12,13 +12,13 @@ import { Company } from './company.model'
   toObject: { virtuals: true },
 })
 export class UserCompany extends Document {
-  @Prop({ type: Types.ObjectId, ref: 'User', required: true })
+  @Prop({ index: true, type: Types.ObjectId, ref: 'User', required: true })
   userId: Types.ObjectId
 
-  @Prop({ type: Types.ObjectId, ref: 'Company', required: true })
+  @Prop({ index: true, type: Types.ObjectId, ref: 'Company', required: true })
   companyId: Types.ObjectId
 
-  @Prop({ type: [{ type: Types.ObjectId, ref: 'Role' }] })
+  @Prop({ index: true, type: [{ type: Types.ObjectId, ref: 'Role' }] })
   rolesId: Types.ObjectId[]
 
   @Prop()

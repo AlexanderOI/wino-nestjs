@@ -7,19 +7,19 @@ import { FormTask } from '@/models/form-task.model'
 
 @Schema({ timestamps: true, toJSON: { virtuals: true }, toObject: { virtuals: true } })
 export class Project extends Document {
-  @Prop()
+  @Prop({ index: true, required: true })
   name: string
 
-  @Prop()
+  @Prop({ index: true, required: true })
   code: string
 
   @Prop()
   description: string
 
-  @Prop({ type: Types.ObjectId, ref: 'User' })
+  @Prop({ index: true, type: Types.ObjectId, ref: 'User' })
   leaderId: Types.ObjectId
 
-  @Prop({ type: [{ type: Types.ObjectId, ref: 'User' }] })
+  @Prop({ index: true, type: [{ type: Types.ObjectId, ref: 'User' }] })
   membersId: Types.ObjectId[]
 
   @Prop()
@@ -28,7 +28,7 @@ export class Project extends Document {
   @Prop()
   status: string
 
-  @Prop({ type: Types.ObjectId, ref: 'FormTask' })
+  @Prop({ index: true, type: Types.ObjectId, ref: 'FormTask' })
   formTaskId: Types.ObjectId
 
   @Prop()
@@ -37,7 +37,7 @@ export class Project extends Document {
   @Prop()
   endDate: Date
 
-  @Prop({ type: Types.ObjectId, ref: 'Company' })
+  @Prop({ index: true, type: Types.ObjectId, ref: 'Company' })
   companyId: Types.ObjectId
 }
 

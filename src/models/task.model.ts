@@ -32,16 +32,16 @@ export class Task extends Document {
   @Prop({ type: Number, default: 0 })
   order: number
 
-  @Prop({ type: Types.ObjectId, ref: 'User' })
+  @Prop({ index: true, type: Types.ObjectId, ref: 'User' })
   assignedToId: Types.ObjectId
 
-  @Prop({ type: Types.ObjectId, ref: 'Project' })
+  @Prop({ index: true, type: Types.ObjectId, ref: 'Project' })
   projectId: Types.ObjectId
 
-  @Prop({ type: Types.ObjectId, ref: 'ColumnTask' })
+  @Prop({ index: true, type: Types.ObjectId, ref: 'ColumnTask' })
   columnId: Types.ObjectId
 
-  @Prop({ type: Types.ObjectId, ref: 'Company' })
+  @Prop({ index: true, type: Types.ObjectId, ref: 'Company' })
   companyId: Types.ObjectId
 
   @Prop({ type: [FieldSchema] })

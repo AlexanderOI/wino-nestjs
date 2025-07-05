@@ -11,13 +11,13 @@ import { JSONContent } from '@/types/json-content.type'
 
 @Schema({ timestamps: true, toJSON: { virtuals: true }, toObject: { virtuals: true } })
 export class Activity extends Document {
-  @Prop({ required: true, type: Types.ObjectId, ref: 'Task' })
+  @Prop({ index: true, required: true, type: Types.ObjectId, ref: 'Task' })
   taskId: Types.ObjectId
 
-  @Prop({ required: true, type: Task })
+  @Prop({ index: true, required: true, type: Task })
   task: Task
 
-  @Prop({ required: true, type: ColumnTask })
+  @Prop({ index: true, required: true, type: ColumnTask })
   column: ColumnTask
 
   @Prop({ required: true })
@@ -32,13 +32,13 @@ export class Activity extends Document {
   @Prop({ type: MongooseSchema.Types.Mixed })
   newValue?: JSONContent
 
-  @Prop({ required: true, type: Types.ObjectId, ref: 'User' })
+  @Prop({ index: true, required: true, type: Types.ObjectId, ref: 'User' })
   userId: Types.ObjectId
 
-  @Prop({ required: true, type: Types.ObjectId, ref: 'Project' })
+  @Prop({ index: true, required: true, type: Types.ObjectId, ref: 'Project' })
   projectId: Types.ObjectId
 
-  @Prop({ required: true, type: Types.ObjectId, ref: 'Company' })
+  @Prop({ index: true, required: true, type: Types.ObjectId, ref: 'Company' })
   companyId: Types.ObjectId
 }
 

@@ -2,7 +2,7 @@ import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose'
 import { Document, Types, HydratedDocument } from 'mongoose'
 import { User } from '@/models/user.model'
 import { Role } from '@/models/role.model'
-import { UserCompany } from './user-company.model'
+import { UserCompany } from '@/models/user-company.model'
 
 @Schema({ timestamps: true, toJSON: { virtuals: true }, toObject: { virtuals: true } })
 export class Company extends Document {
@@ -16,13 +16,13 @@ export class Company extends Document {
   @Prop()
   address: String
 
-  @Prop({ type: [{ type: Types.ObjectId, ref: 'Role' }] })
+  @Prop({ index: true, type: [{ type: Types.ObjectId, ref: 'Role' }] })
   rolesId: Types.ObjectId[]
 
-  @Prop({ type: Types.ObjectId, ref: 'User' })
+  @Prop({ index: true, type: Types.ObjectId, ref: 'User' })
   owner: User
 
-  @Prop({ type: [{ type: Types.ObjectId, ref: 'UserCompany' }] })
+  @Prop({ index: true, type: [{ type: Types.ObjectId, ref: 'UserCompany' }] })
   usersCompany: UserCompany[]
 
   @Prop({ default: false })

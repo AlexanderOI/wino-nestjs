@@ -13,10 +13,10 @@ export class ColumnTask extends Document {
   @Prop({ required: true, default: '#00FF00' })
   color: string
 
-  @Prop({ type: Types.ObjectId, ref: 'Company', required: true })
+  @Prop({ index: true, type: Types.ObjectId, ref: 'Company', required: true })
   companyId: Types.ObjectId
 
-  @Prop({ type: Types.ObjectId, ref: 'Project', required: true })
+  @Prop({ index: true, type: Types.ObjectId, ref: 'Project', required: true })
   projectId: Project
 
   @Prop({ default: true })

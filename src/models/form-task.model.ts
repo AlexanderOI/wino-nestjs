@@ -43,13 +43,13 @@ const FieldSchema = SchemaFactory.createForClass(Field)
 
 @Schema({ timestamps: true })
 export class FormTask extends Document {
-  @Prop({ required: true })
+  @Prop({ index: true, required: true })
   companyId: string
 
   @Prop({ required: true })
   name: string
 
-  @Prop({ type: [FieldSchema], required: true })
+  @Prop({ index: true, type: [FieldSchema], required: true })
   fields: Field[]
 
   @Prop({ required: true, default: false })

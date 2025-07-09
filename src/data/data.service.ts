@@ -220,7 +220,7 @@ export class DataService {
         return {
           ...taskData,
           code: distribution.startTask + index + 1,
-          order: index + 1,
+          order: index * 1000,
           projectId: project._id,
           columnId: column._id,
           companyId: adminUser.currentCompanyId,

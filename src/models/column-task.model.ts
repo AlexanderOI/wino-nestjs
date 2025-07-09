@@ -13,6 +13,9 @@ export class ColumnTask extends Document {
   @Prop({ required: true, default: '#00FF00' })
   color: string
 
+  @Prop({ required: true, default: false })
+  completed: boolean
+
   @Prop({ index: true, type: Types.ObjectId, ref: 'Company', required: true })
   companyId: Types.ObjectId
 

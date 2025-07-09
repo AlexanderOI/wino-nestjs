@@ -9,6 +9,7 @@ import {
   Put,
   Query,
 } from '@nestjs/common'
+import { ApiBearerAuth, ApiOperation, ApiResponse } from '@nestjs/swagger'
 
 import { Auth } from '@/auth/auth.decorator'
 import { User } from '@/auth/decorators/user.decorator'
@@ -19,6 +20,8 @@ import { PERMISSIONS } from '@/permissions/constants/permissions'
 import { TasksService } from '@/tasks/tasks.service'
 
 import { PaginationDto } from '@/common/dto/pagination.dto'
+import { MoveToColumnDto } from '@/tasks/dto/move-to-column.dto'
+import { MoveTaskPositionDto } from '@/tasks/dto/move-task-position.dto'
 import { CreateTaskDto } from '@/tasks/dto/create-task.dto'
 import { UpdateTaskDto } from '@/tasks/dto/update-task.dto'
 import { FilterTaskDto } from '@/tasks/dto/filter-task.dto'
@@ -27,6 +30,7 @@ import { CreateFieldDto } from '@/tasks/dto/create-field.dto'
 import { SelectTaskDto } from '@/tasks/dto/select.dto'
 import { FilterTaskActivityDto } from '@/tasks/dto/filter-task-activity'
 
+@ApiBearerAuth()
 @Auth()
 @Controller('tasks')
 export class TasksController {
@@ -36,6 +40,40 @@ export class TasksController {
   @Post()
   create(@Body() createTaskDto: CreateTaskDto, @User() user: UserAuth) {
     return this.tasksService.create(createTaskDto, user)
+  }
+
+  @Auth(PERMISSIONS.CREATE_TASK)
+  @Post('position')
+  createAtPosition(
+    @Body() createTaskDto: CreateTaskDto,
+    @User() user: UserAuth,
+    @Query('insertAfterTaskId') insertAfterTaskId?: string,
+  ) {
+    return this.tasksService.createAtPosition(
+      createTaskDto,
+      user,
+      insertAfterTaskId || null,
+    )
+  }
+
+  @Auth(PERMISSIONS.EDIT_TASK)
+  @Put(':id/move-to-column')
+  moveTaskToColumn(
+    @Param('id', ParseMongoIdPipe) id: string,
+    @Body() moveData: MoveToColumnDto,
+    @User() user: UserAuth,
+  ) {
+    return this.tasksService.moveTaskToColumn(id, moveData, user)
+  }
+
+  @Auth(PERMISSIONS.EDIT_TASK)
+  @Put(':id/move-to-position')
+  moveTaskToPosition(
+    @Param('id', ParseMongoIdPipe) id: string,
+    @Body() moveData: MoveTaskPositionDto,
+    @User() user: UserAuth,
+  ) {
+    return this.tasksService.moveTaskToPosition(id, moveData, user)
   }
 
   @Auth(PERMISSIONS.VIEW_TASK)
@@ -56,6 +94,9 @@ export class TasksController {
     return this.tasksService.getRecentTaskActivity(user, filterTaskActivityDto)
   }
 
+  @ApiOperation({ summary: 'Get all tasks' })
+  @ApiResponse({ status: 200, description: 'Tasks fetched successfully' })
+  @ApiResponse({ status: 401, description: 'Unauthorized' })
   @Auth(PERMISSIONS.VIEW_TASK)
   @Get()
   findAll(@Query() filterTaskDto: FilterTaskDto, @User() user: UserAuth) {

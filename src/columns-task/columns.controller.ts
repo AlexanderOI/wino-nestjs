@@ -30,8 +30,23 @@ export class ColumnsController {
   create(
     @Param('projectId', ParseMongoIdPipe) projectId: string,
     @Body() createColumnDto: CreateColumnTaskDto,
+    @User() user: UserAuth,
   ) {
-    return this.columnsService.create(projectId, createColumnDto)
+    return this.columnsService.create(projectId, createColumnDto, user)
+  }
+
+  @Auth(PERMISSIONS.CREATE_COLUMN)
+  @Post('project/:projectId/position')
+  createAtPosition(
+    @Param('projectId', ParseMongoIdPipe) projectId: string,
+    @Body() createColumnDto: CreateColumnTaskDto,
+    @Query('insertAfterColumnId') insertAfterColumnId?: string,
+  ) {
+    return this.columnsService.createAtPosition(
+      projectId,
+      createColumnDto,
+      insertAfterColumnId || null,
+    )
   }
 
   @Auth(PERMISSIONS.VIEW_TASK)

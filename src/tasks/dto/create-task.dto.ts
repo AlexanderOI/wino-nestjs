@@ -8,7 +8,7 @@ import {
   ValidateNested,
 } from 'class-validator'
 import { Type } from 'class-transformer'
-import { ObjectId } from 'mongoose'
+import { Types } from 'mongoose'
 import { JSONContentNode } from '@/common/json-content.dto'
 
 export class CreateTaskDto {
@@ -24,7 +24,7 @@ export class CreateTaskDto {
   @IsOptional()
   @IsNotEmpty()
   @Transform(({ value }) => toObjectId(value))
-  assignedToId: ObjectId
+  assignedToId: Types.ObjectId
 
   @IsNumber()
   @IsOptional()
@@ -32,9 +32,9 @@ export class CreateTaskDto {
 
   @IsNotEmpty()
   @Transform(({ value }) => toObjectId(value))
-  columnId: ObjectId
+  columnId: Types.ObjectId
 
   @IsNotEmpty()
   @Transform(({ value }) => toObjectId(value))
-  projectId: ObjectId
+  projectId: Types.ObjectId
 }

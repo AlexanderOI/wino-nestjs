@@ -1,13 +1,13 @@
 import { BadRequestException, Injectable } from '@nestjs/common'
-import { CreateCompanyDto } from './dto/create-company.dto'
-import { UpdateCompanyDto } from './dto/update-company.dto'
-import { Company, CompanyDocument } from '../models/company.model'
 import { InjectModel } from '@nestjs/mongoose'
 import { Model } from 'mongoose'
 import { UserAuth } from '@/types'
-import { Role } from '@/models/role.model'
-import { Permission } from '@/models/permission.model'
+
+import { CreateCompanyDto, UpdateCompanyDto } from '@/company/dto'
 import { UserCompany, UserCompanyDocument } from '@/models/user-company.model'
+import { Company, CompanyDocument } from '@/models/company.model'
+import { Permission } from '@/models/permission.model'
+import { Role } from '@/models/role.model'
 
 @Injectable()
 export class CompanyService {

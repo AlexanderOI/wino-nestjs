@@ -2,8 +2,11 @@ import { Injectable, NotFoundException } from '@nestjs/common'
 import { InjectModel } from '@nestjs/mongoose'
 import { Model, Types } from 'mongoose'
 
-import { CreateFormsTaskDto } from '@/forms-task/dto/create-forms-task.dto'
-import { UpdateFormsTaskDto } from '@/forms-task/dto/update-forms-task.dto'
+import {
+  CreateFormsTaskDto,
+  UpdateFormsTaskDto,
+  AssignFormTaskDto,
+} from '@/forms-task/dto/request'
 
 import { FormTask } from '@/models/form-task.model'
 import { Project } from '@/models/project.model'
@@ -109,7 +112,7 @@ export class FormsTaskService {
 
   async assignFormTaskToProject(
     formTaskId: string,
-    projectId: string,
+    assignFormTaskDto: AssignFormTaskDto,
     userAuth: UserAuth,
   ) {
     const formTask = await this.findOne(formTaskId, userAuth)
@@ -117,7 +120,7 @@ export class FormsTaskService {
     if (formTask.hasProject) throw new NotFoundException('FormTask already has a project')
 
     const project = await this.projectModel.findOne({
-      _id: projectId,
+      _id: assignFormTaskDto.projectId,
       companyId: userAuth.companyId,
     })
 

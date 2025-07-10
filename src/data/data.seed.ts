@@ -1,8 +1,7 @@
-import { CreateUserDto } from '@/user/dto/create-user.dto'
-import { CreateCompanyDto } from '@/company/dto/create-company.dto'
+import { CreateUserDto } from '@/user/dto/request/create-user.dto'
+import { CreateCompanyDto } from '@/company/dto/request/create-company.dto'
 import { PERMISSIONS } from '@/permissions/constants/permissions'
-import { CreateProjectDto } from '@/projects/dto/create-project.dto'
-import { CreateRoleDto } from '@/roles/dto/create-role.dto'
+import { CreateRoleDto } from '@/roles/dto/request/create-role.dto'
 
 export const initialCompany: CreateCompanyDto = {
   name: 'Empresa Inicial',

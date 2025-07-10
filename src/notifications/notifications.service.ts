@@ -4,7 +4,7 @@ import { Model, Types } from 'mongoose'
 import { Server } from 'socket.io'
 
 import { Notification, NotificationDocument } from '@/models/notification.model'
-import { FilterNotificationDto } from '@/notifications/dto/filter-notification.dto'
+import { FilterNotificationDto } from '@/notifications/dto/request'
 
 @Injectable()
 export class NotificationsService {
@@ -113,21 +113,27 @@ export class NotificationsService {
   }
 
   async markAllAsRead(userId: string | Types.ObjectId) {
-    return this.notificationModel.updateMany(
+    await this.notificationModel.updateMany(
       { userIds: userId, read: false },
       { read: true },
     )
+
+    return { message: 'All notifications marked as read' }
   }
 
   async markAsRead(notificationId: string) {
-    return this.notificationModel.findByIdAndUpdate(
+    await this.notificationModel.findByIdAndUpdate(
       notificationId,
       { read: true },
       { new: true },
     )
+
+    return { message: 'Notification marked as read' }
   }
 
   async deleteNotification(notificationId: string) {
-    return this.notificationModel.findByIdAndDelete(notificationId)
+    await this.notificationModel.findByIdAndDelete(notificationId)
+
+    return { message: 'Notification deleted' }
   }
 }

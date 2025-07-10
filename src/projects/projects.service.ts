@@ -8,10 +8,11 @@ import { User } from '@/models/user.model'
 import { Project, ProjectDocument } from '@/models/project.model'
 import { UserCompany, UserCompanyDocument } from '@/models/user-company.model'
 
-import { CreateProjectDto } from '@/projects/dto/create-project.dto'
-import { UpdateProjectDto } from '@/projects/dto/update-project.dto'
-import { AddProjectUsersDto } from '@/projects/dto/add-project.dto'
-
+import {
+  CreateProjectDto,
+  UpdateProjectDto,
+  AddProjectUsersDto,
+} from '@/projects/dto/request'
 import { ColumnsService } from '@/columns-task/columns.service'
 import { UserService } from '@/user/user.service'
 import { NotificationsService } from '@/notifications/notifications.service'

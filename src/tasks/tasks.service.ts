@@ -17,16 +17,19 @@ import { ColumnsService } from '@/columns-task/columns.service'
 import { ProjectsService } from '@/projects/projects.service'
 import { UserService } from '@/user/user.service'
 
-import { FilterTaskDto, SortDto } from '@/tasks/dto/filter-task.dto'
+import {
+  FilterTaskDto,
+  SortDto,
+  CreateTaskDto,
+  UpdateTaskDto,
+  CreateFieldDto,
+  UpdateFieldDto,
+  SelectTaskDto,
+  FilterTaskActivityDto,
+  MoveToColumnDto,
+  MoveTaskPositionDto,
+} from '@/tasks/dto/request'
 import { PaginationDto } from '@/common/dto/pagination.dto'
-import { CreateTaskDto } from '@/tasks/dto/create-task.dto'
-import { UpdateTaskDto } from '@/tasks/dto/update-task.dto'
-import { CreateFieldDto } from '@/tasks/dto/create-field.dto'
-import { UpdateFieldDto } from '@/tasks/dto/update-field.dto'
-import { SelectTaskDto } from '@/tasks/dto/select.dto'
-import { FilterTaskActivityDto } from '@/tasks/dto/filter-task-activity'
-import { MoveToColumnDto } from '@/tasks/dto/move-to-column.dto'
-import { MoveTaskPositionDto } from '@/tasks/dto/move-task-position.dto'
 
 @Injectable()
 export class TasksService {

@@ -1,4 +1,4 @@
-import { ObjectId, Types } from 'mongoose'
+import { Types } from 'mongoose'
 import { ApiProperty } from '@nestjs/swagger'
 import { Transform, Type } from 'class-transformer'
 import {
@@ -16,42 +16,45 @@ import {
 import { toObjectId } from '@/common/transformer.mongo-id'
 
 export class SortDto {
+  @ApiProperty({
+    description: 'Field to sort by',
+    example: 'createdAt',
+  })
   @IsString()
   @IsNotEmpty()
   id: string
 
+  @ApiProperty({
+    description: 'Whether to sort in descending order',
+    example: true,
+  })
   @IsBoolean()
   desc: boolean
 }
 
 export class FilterTaskDto {
   @ApiProperty({
-    required: true,
-    description: 'The project id of the task',
-    example: '123e4567-e89b-12d3-a456-426614174000',
-    type: 'string',
+    description: 'The project ID to filter tasks by',
+    example: '507f1f77bcf86cd799439011',
   })
   @IsNotEmpty()
   @Transform(({ value }) => toObjectId(value))
   projectId: Types.ObjectId
 
   @ApiProperty({
+    description: 'Filter by task name',
+    example: 'authentication',
     required: false,
-    description: 'The name of the task',
-    example: 'Task 1',
   })
   @IsString()
   @IsOptional()
-  name: string
+  name?: string
 
   @ApiProperty({
+    description: 'Array of column IDs to filter tasks by',
+    example: ['507f1f77bcf86cd799439011', '507f1f77bcf86cd799439012'],
+    type: [String],
     required: false,
-    description: 'The columns id of the task',
-    example: ['123e4567-e89b-12d3-a456-426614174000'],
-    type: 'array',
-    items: {
-      type: 'string',
-    },
   })
   @IsOptional()
   @Transform(({ value }) => {
@@ -62,16 +65,13 @@ export class FilterTaskDto {
     }
   })
   @IsArray()
-  columnsId: Types.ObjectId[] | null
+  columnsId?: Types.ObjectId[] | null
 
   @ApiProperty({
+    description: 'Array of user IDs to filter tasks by assignee',
+    example: ['507f1f77bcf86cd799439011', '507f1f77bcf86cd799439012'],
+    type: [String],
     required: false,
-    description: 'The assigned to id of the task',
-    example: ['123e4567-e89b-12d3-a456-426614174000'],
-    type: 'array',
-    items: {
-      type: 'string',
-    },
   })
   @IsOptional()
   @Transform(({ value }) => {
@@ -82,61 +82,62 @@ export class FilterTaskDto {
     }
   })
   @IsArray()
-  assignedToId: Types.ObjectId[] | null
+  assignedToId?: Types.ObjectId[] | null
 
   @ApiProperty({
+    description: 'Search term to filter tasks by name or description',
+    example: 'authentication',
     required: false,
-    description: 'The search of the task',
-    example: 'Task 1',
   })
   @IsString()
   @IsOptional()
-  search: string
+  search?: string
 
   @ApiProperty({
+    description: 'Filter tasks updated from this date',
+    example: '2023-01-01T00:00:00.000Z',
     required: false,
-    description: 'The from updated at of the task',
-    example: '2021-01-01',
   })
   @IsDate()
   @IsOptional()
   @Transform(({ value }) => new Date(value))
-  fromUpdatedAt: Date
+  fromUpdatedAt?: Date
 
   @ApiProperty({
+    description: 'Filter tasks updated until this date',
+    example: '2023-12-31T23:59:59.999Z',
     required: false,
-    description: 'The to updated at of the task',
-    example: '2021-01-01',
   })
   @IsDate()
   @IsOptional()
   @Transform(({ value }) => new Date(value))
-  toUpdatedAt: Date
+  toUpdatedAt?: Date
 
   @ApiProperty({
+    description: 'Filter tasks created from this date',
+    example: '2023-01-01T00:00:00.000Z',
     required: false,
-    description: 'The from created at of the task',
-    example: '2021-01-01',
   })
   @IsDate()
   @IsOptional()
   @Transform(({ value }) => new Date(value))
-  fromCreatedAt: Date
+  fromCreatedAt?: Date
 
   @ApiProperty({
+    description: 'Filter tasks created until this date',
+    example: '2023-12-31T23:59:59.999Z',
     required: false,
-    description: 'The to created at of the task',
-    example: '2021-01-01',
   })
   @IsDate()
   @IsOptional()
   @Transform(({ value }) => new Date(value))
-  toCreatedAt: Date
+  toCreatedAt?: Date
 
   @ApiProperty({
+    description: 'Sorting configuration',
+    example: [{ id: 'createdAt', desc: true }],
+    type: [SortDto],
     required: false,
-    description: 'The sort of the task',
-    example: [{ id: '123e4567-e89b-12d3-a456-426614174000', desc: true }],
   })
   @IsOptional()
   @Transform(({ value }) => {
@@ -155,23 +156,24 @@ export class FilterTaskDto {
   sort?: SortDto[]
 
   @ApiProperty({
-    required: false,
-    description: 'The offset of the task',
+    description: 'Number of tasks to skip (for pagination)',
     example: 0,
+    required: false,
   })
   @IsNumber()
   @IsOptional()
   @Min(0)
   @Transform(({ value }) => Number(value))
-  offset: number
+  offset?: number
 
   @ApiProperty({
-    description: 'The limit of the task',
+    description: 'Maximum number of tasks to return',
     example: 10,
+    required: false,
   })
   @IsNumber()
   @IsOptional()
   @Min(1)
   @Transform(({ value }) => Number(value))
-  limit: number
+  limit?: number
 }

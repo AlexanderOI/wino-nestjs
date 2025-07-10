@@ -134,8 +134,9 @@ export class ProjectsController {
   update(
     @Param('id', ParseMongoIdPipe) id: string,
     @Body() updateProjectDto: UpdateProjectDto,
+    @User() user: UserAuth,
   ) {
-    return this.projectsService.update(id, updateProjectDto)
+    return this.projectsService.update(id, updateProjectDto, user)
   }
 
   @ApiOperation({

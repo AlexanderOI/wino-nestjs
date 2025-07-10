@@ -1,4 +1,4 @@
-import { Injectable, NotFoundException } from '@nestjs/common'
+import { BadRequestException, Injectable, NotFoundException } from '@nestjs/common'
 import { InjectModel } from '@nestjs/mongoose'
 import { Model, Types } from 'mongoose'
 
@@ -16,6 +16,7 @@ import {
 import { ColumnsService } from '@/columns-task/columns.service'
 import { UserService } from '@/user/user.service'
 import { NotificationsService } from '@/notifications/notifications.service'
+import { toObjectId } from '@/common/transformer.mongo-id'
 
 @Injectable()
 export class ProjectsService {
@@ -32,6 +33,8 @@ export class ProjectsService {
   ) {}
 
   async create(createProjectDto: CreateProjectDto, userAuth: UserAuth) {
+    await this.checkCodeExist(createProjectDto.code, userAuth._id, userAuth)
+
     const project = await this.projectModel.create({
       ...createProjectDto,
       companyId: userAuth.companyId,
@@ -103,8 +106,12 @@ export class ProjectsService {
     return projectResponse
   }
 
-  async update(id: string, updateProjectDto: UpdateProjectDto) {
-    const project = await this.projectModel.findById(id)
+  async update(id: string, updateProjectDto: UpdateProjectDto, userAuth: UserAuth) {
+    await this.checkCodeExist(updateProjectDto.code, toObjectId(id), userAuth)
+
+    const project = await this.projectModel.findByIdAndUpdate(id, updateProjectDto, {
+      new: true,
+    })
 
     if (!project) throw new NotFoundException('Project not found')
 
@@ -196,5 +203,21 @@ export class ProjectsService {
     if (!projects) throw new NotFoundException('Projects not found')
 
     return projects
+  }
+
+  async checkCodeExist(code: string, id: Types.ObjectId, userAuth: UserAuth) {
+    const project = await this.projectModel.findOne({
+      code,
+      companyId: userAuth.companyId,
+      _id: { $ne: id },
+    })
+
+    if (project)
+      throw new BadRequestException({
+        code: 'code_already_exists',
+        message: 'The code already exists',
+      })
+
+    return true
   }
 }

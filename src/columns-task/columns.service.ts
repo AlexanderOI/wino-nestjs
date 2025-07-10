@@ -8,8 +8,7 @@ import { calculateOrder } from '@/common/utils/calculate-order'
 
 import { Task } from '@/models/task.model'
 import { ColumnTask } from '@/models/column-task.model'
-import { CreateColumnTaskDto } from './dto/create-column.dto'
-import { UpdateColumnTaskDto } from './dto/update-column.dto'
+import { CreateColumnDto, UpdateColumnDto } from '@/columns-task/dto/request'
 
 @Injectable()
 export class ColumnsService {
@@ -39,7 +38,7 @@ export class ColumnsService {
     return columns
   }
 
-  async create(projectId: string, createColumnDto: CreateColumnTaskDto, user: UserAuth) {
+  async create(projectId: string, createColumnDto: CreateColumnDto, user: UserAuth) {
     const lastColumn = await this.columnTaskModel
       .findOne({ projectId })
       .sort({ order: -1 })
@@ -58,7 +57,7 @@ export class ColumnsService {
 
   async createAtPosition(
     projectId: string,
-    createColumnDto: CreateColumnTaskDto,
+    createColumnDto: CreateColumnDto,
     insertAfterColumnId: string | null = null,
   ) {
     let newOrder: number
@@ -105,7 +104,7 @@ export class ColumnsService {
     return column
   }
 
-  async update(columnId: string, updateColumnDto: UpdateColumnTaskDto) {
+  async update(columnId: string, updateColumnDto: UpdateColumnDto) {
     const column = await this.columnTaskModel.findById(columnId)
     if (!column) throw new NotFoundException('Column not found')
 

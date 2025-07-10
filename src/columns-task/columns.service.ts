@@ -22,7 +22,7 @@ export class ColumnsService {
       { name: 'Pending', color: '#0000ff', order: 1000 },
       { name: 'In Progress', color: '#ffff00', order: 2000 },
       { name: 'Paused', color: '#868179', order: 3000 },
-      { name: 'Completed', color: '#00ff00', order: 4000, completed: true },
+      { name: 'Completed', color: '#00ff00', order: 90000, completed: true },
     ]
 
     const columns = await Promise.all(
@@ -51,6 +51,9 @@ export class ColumnsService {
       companyId: user.companyId,
       order: newOrder,
     })
+
+    lastColumn.order = newOrder + 1000
+    await lastColumn.save()
 
     return newColumn
   }

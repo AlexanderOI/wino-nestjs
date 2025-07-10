@@ -37,7 +37,7 @@ export class FilterTaskDto {
     description: 'The project ID to filter tasks by',
     example: '507f1f77bcf86cd799439011',
   })
-  @IsNotEmpty()
+  @IsOptional()
   @Transform(({ value }) => toObjectId(value))
   projectId: Types.ObjectId
 

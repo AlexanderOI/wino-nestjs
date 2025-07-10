@@ -14,10 +14,12 @@ import { NotificationsService } from '@/notifications/notifications.service'
 
 import { UserResponse } from '@/user/interfaces/user-response'
 
-import { CreateUserDto } from '@/user/dto/create-user.dto'
-import { UpdateUserDto } from '@/user/dto/update-user.dto'
-import { UpdateInvitedUserDto } from '@/user/dto/update-invited-user.dto'
-import { CreateInvitedUserDto } from '@/user/dto/create-invited-user.dto'
+import {
+  CreateUserDto,
+  UpdateUserDto,
+  UpdateInvitedUserDto,
+  CreateInvitedUserDto,
+} from '@/user/dto/request'
 import { avatarColors } from '@/user/constants/avatar-colors'
 
 @Injectable()

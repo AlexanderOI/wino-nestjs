@@ -158,7 +158,7 @@ export class ColumnsService {
       {
         $lookup: {
           from: 'tasks',
-          let: { columnId: '$_id' },
+          let: { columnId: '$_id', isCompleted: '$completed' },
           pipeline: [
             {
               $match: {
@@ -168,7 +168,34 @@ export class ColumnsService {
               },
             },
             { $sort: { order: 1 } },
-            { $limit: 10 },
+            {
+              $facet: {
+                limitedTasks: [
+                  {
+                    $match: {
+                      $expr: { $eq: ['$$isCompleted', true] },
+                    },
+                  },
+                  { $limit: 10 },
+                ],
+                unlimitedTasks: [
+                  {
+                    $match: {
+                      $expr: { $ne: ['$$isCompleted', true] },
+                    },
+                  },
+                ],
+              },
+            },
+            {
+              $project: {
+                tasks: {
+                  $concatArrays: ['$limitedTasks', '$unlimitedTasks'],
+                },
+              },
+            },
+            { $unwind: '$tasks' },
+            { $replaceRoot: { newRoot: '$tasks' } },
             {
               $lookup: {
                 from: 'users',

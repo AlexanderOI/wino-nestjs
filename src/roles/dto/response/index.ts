@@ -1,0 +1,6 @@
+export * from './role-response.dto'
+export * from './create-role-response.dto'
+export * from './roles-list-response.dto'
+export * from './search-roles-response.dto'
+export * from './update-role-response.dto'
+export * from './delete-role-response.dto'

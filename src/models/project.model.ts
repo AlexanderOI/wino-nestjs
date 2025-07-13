@@ -16,6 +16,9 @@ export class Project extends Document {
   @Prop()
   description: string
 
+  @Prop()
+  color: string
+
   @Prop({ index: true, type: Types.ObjectId, ref: 'User' })
   leaderId: Types.ObjectId
 

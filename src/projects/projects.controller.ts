@@ -28,6 +28,7 @@ import {
   CreateProjectDto,
   UpdateProjectDto,
   AddProjectUsersDto,
+  FilterProjectsDto,
 } from '@/projects/dto/request'
 
 import {
@@ -37,6 +38,7 @@ import {
   ProjectListResponseDto,
   DeleteProjectResponseDto,
   SetProjectUsersResponseDto,
+  ProjectsListResponseDto,
 } from '@/projects/dto/response'
 import { ProjectsService } from '@/projects/projects.service'
 
@@ -67,18 +69,18 @@ export class ProjectsController {
   @ApiOperation({
     summary: 'Get all projects',
     description:
-      'Retrieves all projects for the authenticated user company, including members and leader information.',
+      'Retrieves all projects for the authenticated user company with pagination and search functionality.',
   })
   @ApiResponse({
     status: 200,
     description: 'Projects retrieved successfully',
-    type: [ProjectWithMembersResponseDto],
+    type: ProjectsListResponseDto,
   })
   @ApiErrors(['unauthorized'])
   @Auth(PERMISSIONS.VIEW_PROJECT)
   @Get()
-  findAll(@User() user: UserAuth) {
-    return this.projectsService.findAll(user)
+  findAll(@Query() filterDto: FilterProjectsDto, @User() user: UserAuth) {
+    return this.projectsService.findAll(user, filterDto)
   }
 
   @ApiOperation({

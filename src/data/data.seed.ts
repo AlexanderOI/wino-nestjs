@@ -197,6 +197,7 @@ export const initialProjects = [
     startDate: new Date('2024-01-01'),
     endDate: new Date('2024-02-06'),
     leaderId: '',
+    color: '#0000FF',
   },
   {
     name: 'EXO – Expense Organizer',
@@ -208,6 +209,7 @@ export const initialProjects = [
     startDate: new Date('2024-02-07'),
     endDate: new Date('2024-02-28'),
     leaderId: '',
+    color: '#800080',
   },
 
   {
@@ -220,6 +222,7 @@ export const initialProjects = [
     startDate: new Date('2024-03-01'),
     endDate: new Date('2024-03-31'),
     leaderId: '',
+    color: '#008000',
   },
 
   {
@@ -232,6 +235,7 @@ export const initialProjects = [
     startDate: new Date('2024-04-01'),
     endDate: new Date('2024-04-30'),
     leaderId: '',
+    color: '#FF0000',
   },
 ]
 

@@ -1,6 +1,6 @@
 import { BadRequestException, Injectable, NotFoundException } from '@nestjs/common'
 import { InjectModel } from '@nestjs/mongoose'
-import { Model, Types } from 'mongoose'
+import { FilterQuery, Model, Types } from 'mongoose'
 
 import { UserAuth } from '@/types'
 
@@ -12,6 +12,7 @@ import {
   CreateProjectDto,
   UpdateProjectDto,
   AddProjectUsersDto,
+  FilterProjectsDto,
 } from '@/projects/dto/request'
 import { ColumnsService } from '@/columns-task/columns.service'
 import { UserService } from '@/user/user.service'
@@ -57,29 +58,76 @@ export class ProjectsService {
     return project
   }
 
-  async findAll(userAuth: UserAuth, projectIds?: Types.ObjectId[]): Promise<any[]> {
-    const projects = await this.projectModel
-      .find({
-        companyId: userAuth.companyId,
-        ...(projectIds ? { _id: { $in: projectIds } } : {}),
-      })
-      .select('-updatedAt -createdAt -__v')
-      .lean()
+  async findAll(
+    userAuth: UserAuth,
+    filterDto: FilterProjectsDto = {},
+    projectIds?: Types.ObjectId[],
+  ): Promise<{
+    projects: any[]
+    total: number
+  }> {
+    const { search, page = 1, limit = 10 } = filterDto
+    const skip = (page - 1) * limit
 
-    const projectsResponse = await Promise.all(
-      projects.map((project) =>
-        Promise.all([
-          this.userService.findAll(userAuth, project.membersId, false),
-          this.userService.findOne(project.leaderId, userAuth, false),
-        ]).then(([members, leader]) => ({
-          ...project,
-          members,
-          leader,
-        })),
-      ),
-    )
+    const matchStage: FilterQuery<ProjectDocument> = {
+      companyId: userAuth.companyId,
+      ...(projectIds ? { _id: { $in: projectIds } } : {}),
+    }
 
-    return projectsResponse
+    if (search) {
+      matchStage.$or = [
+        { name: { $regex: search, $options: 'i' } },
+        { description: { $regex: search, $options: 'i' } },
+      ]
+    }
+
+    const [result] = await this.projectModel.aggregate([
+      { $match: matchStage },
+      {
+        $lookup: {
+          from: 'users',
+          localField: 'leaderId',
+          foreignField: '_id',
+          as: 'leader',
+          pipeline: [{ $project: { password: 0, __v: 0, updatedAt: 0, createdAt: 0 } }],
+        },
+      },
+      {
+        $lookup: {
+          from: 'users',
+          localField: 'membersId',
+          foreignField: '_id',
+          as: 'members',
+          pipeline: [{ $project: { password: 0, __v: 0, updatedAt: 0, createdAt: 0 } }],
+        },
+      },
+      {
+        $addFields: {
+          leader: { $arrayElemAt: ['$leader', 0] },
+        },
+      },
+      {
+        $project: {
+          __v: 0,
+          updatedAt: 0,
+          createdAt: 0,
+        },
+      },
+      {
+        $facet: {
+          data: [{ $sort: { createdAt: -1 } }, { $skip: skip }, { $limit: limit }],
+          total: [{ $count: 'count' }],
+        },
+      },
+    ])
+
+    const projects = result.data || []
+    const total = result.total[0]?.count || 0
+
+    return {
+      projects,
+      total,
+    }
   }
 
   async findOne(
@@ -88,7 +136,7 @@ export class ProjectsService {
     withMembers = false,
   ): Promise<Project> {
     const project = await this.projectModel
-      .findById(id)
+      .findOne({ _id: id, companyId: userAuth.companyId })
       .select('-updatedAt -createdAt -__v')
       .lean()
 

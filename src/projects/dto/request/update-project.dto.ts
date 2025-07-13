@@ -24,6 +24,13 @@ export class UpdateProjectDto extends PartialType(CreateProjectDto) {
   description?: string
 
   @ApiProperty({
+    description: 'The color of the project',
+    example: '#0000FF',
+    required: false,
+  })
+  color?: string
+
+  @ApiProperty({
     description: 'The ID of the project leader',
     example: '507f1f77bcf86cd799439011',
     required: false,

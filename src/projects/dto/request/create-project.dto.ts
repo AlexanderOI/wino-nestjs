@@ -30,6 +30,14 @@ export class CreateProjectDto {
   description: string
 
   @ApiProperty({
+    description: 'The color of the project',
+    example: '#0000FF',
+  })
+  @IsNotEmpty()
+  @IsString()
+  color: string
+
+  @ApiProperty({
     description: 'The ID of the project leader',
     example: '507f1f77bcf86cd799439011',
   })

@@ -1,4 +1,4 @@
-import { BadRequestException, Injectable } from '@nestjs/common'
+import { BadRequestException, ConflictException, Injectable } from '@nestjs/common'
 import { InjectModel } from '@nestjs/mongoose'
 import { Model } from 'mongoose'
 import { UserAuth } from '@/types'
@@ -23,6 +23,8 @@ export class CompanyService {
   ) {}
 
   async create(createCompanyDto: CreateCompanyDto, user: UserAuth): Promise<Company> {
+    await this.checkExistCompany(createCompanyDto.name)
+
     const permissions = await this.permissionModel.find()
 
     const role = await this.roleModel.create({
@@ -102,6 +104,8 @@ export class CompanyService {
   ): Promise<Company> {
     const company = await this.companyModel.findById(id)
 
+    await this.checkExistCompany(updateCompanyDto.name, id)
+
     if (!company) throw new BadRequestException('Company not found')
 
     this.checkCompanyOwner(company, user)
@@ -142,6 +146,14 @@ export class CompanyService {
   checkCompanyOwner(company: Company, user: UserAuth) {
     if (company.owner.toString() !== user._id.toString()) {
       throw new BadRequestException('You are not the owner of this company')
+    }
+  }
+
+  async checkExistCompany(name: string, id?: string) {
+    const company = await this.companyModel.findOne({ name, _id: { $ne: id } })
+
+    if (company) {
+      throw new ConflictException(`Company with name ${name} already exists`)
     }
   }
 }

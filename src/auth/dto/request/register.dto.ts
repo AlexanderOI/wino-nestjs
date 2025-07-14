@@ -1,4 +1,4 @@
-import { IsNotEmpty, IsString, IsEmail, Matches } from 'class-validator'
+import { IsNotEmpty, IsString, IsEmail, Matches, ValidateIf } from 'class-validator'
 import { ApiProperty } from '@nestjs/swagger'
 
 export class RegisterAuthDto {
@@ -22,12 +22,14 @@ export class RegisterAuthDto {
   userName: string
 
   @ApiProperty({
-    description: 'The email of the user',
+    description: 'The email of the user (optional in demo/development mode)',
     example: 'admin@admin.com',
+    required: false,
   })
+  @ValidateIf(() => !['demo', 'development'].includes(process.env.ENV))
   @IsEmail({}, { message: 'email:Invalid email format' })
   @IsNotEmpty({ message: 'email:Email must not be empty' })
-  email: string
+  email?: string
 
   @ApiProperty({
     description: 'The password of the user',

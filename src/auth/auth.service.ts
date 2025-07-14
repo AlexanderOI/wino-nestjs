@@ -10,16 +10,15 @@ import { InjectModel } from '@nestjs/mongoose'
 import { JwtService } from '@nestjs/jwt'
 import { Model } from 'mongoose'
 
-import { User, UserDocument } from '../models/user.model'
+import { User, UserDocument } from '@/models/user.model'
 import { Company, CompanyDocument } from '@/models/company.model'
 import { Role } from '@/models/role.model'
 import { Permission } from '@/models/permission.model'
 import { UserCompany, UserCompanyDocument } from '@/models/user-company.model'
 
-import { RegisterAuthDto } from './dto/request/register.dto'
-import { LoginAuthDto } from './dto/request/login.dto'
+import { RegisterAuthDto, LoginAuthDto } from '@/auth/dto'
 import { UserAuth } from '@/types'
-import { UserPayload } from './interfaces/user-payload'
+import { UserPayload } from '@/auth/interfaces/user-payload'
 import { toObjectId } from '@/common/transformer.mongo-id'
 import { DataService } from '@/data/data.service'
 import { avatarColors } from '@/user/constants/avatar-colors'
@@ -38,16 +37,24 @@ export class AuthService {
   ) {}
 
   async register(userRegister: RegisterAuthDto) {
-    const { password, email, userName } = userRegister
+    const { password, userName } = userRegister
+    let { email } = userRegister
+
+    if (['demo', 'development'].includes(process.env.ENV)) {
+      email = await this.generateUniqueEmail(userName)
+    }
+
     const passwordHash = await hash(password, 10)
-    const userToCreate = { ...userRegister, password: passwordHash }
+    const userToCreate = { ...userRegister, password: passwordHash, email }
 
-    const existingUserByEmail = await this.userModel.findOne({ email })
+    if (!['demo', 'development'].includes(process.env.ENV)) {
+      const existingUserByEmail = await this.userModel.findOne({ email })
 
-    if (existingUserByEmail) {
-      throw new ConflictException({
-        email: [`A user with email: ${email} already exists`],
-      })
+      if (existingUserByEmail) {
+        throw new ConflictException({
+          email: [`A user with email: ${email} already exists`],
+        })
+      }
     }
 
     const existsUserByName = await this.userModel.findOne({ userName: userName })
@@ -90,7 +97,7 @@ export class AuthService {
 
     await company.updateOne({ usersCompany: [userCompany._id] })
     await user.updateOne({ currentCompanyId: company._id })
-    if (process.env.ENV === 'demo') {
+    if (['demo', 'development'].includes(process.env.ENV)) {
       await this.dataService.createDemoData(user._id)
     }
 
@@ -217,5 +224,30 @@ export class AuthService {
 
   async getRandomAvatarColor() {
     return avatarColors[Math.floor(Math.random() * avatarColors.length)]
+  }
+
+  async generateUniqueEmail(userName: string): Promise<string> {
+    let email: string
+    let isUnique = false
+    let attempts = 0
+    const maxAttempts = 10
+
+    while (!isUnique && attempts < maxAttempts) {
+      const randomNumbers = Math.floor(Math.random() * 900) + 100
+      email = `${userName}${randomNumbers}@demo.com`
+
+      const existingUser = await this.userModel.findOne({ email })
+      if (!existingUser) {
+        isUnique = true
+      }
+      attempts++
+    }
+
+    if (!isUnique) {
+      const timestamp = Date.now()
+      email = `${userName}${timestamp}@demo.com`
+    }
+
+    return email
   }
 }
